@@ -1,0 +1,18 @@
+Topic 1
+-------
+Supervision: Jannik @ CEALS
+
+Name: Super-resolution of precipitation (or wind) on spherical harmonics
+Resources:
+  - https://sander.ai/2024/09/02/spectral-autoregression.html
+
+
+
+
+Topic 2
+-------
+Supervision: Jannik @ CEALS
+
+Name: Beta-VAE for latent generative models in climate 
+Resources: 
+  - https://sander.ai/2025/04/15/latents.html
