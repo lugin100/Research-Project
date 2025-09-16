@@ -6,7 +6,7 @@ Name: Super-resolution of precipitation (or wind) on spherical harmonics
 Resources:
   - https://sander.ai/2024/09/02/spectral-autoregression.html
 
-
+In own words: Gaussian noise adds power to high frequencies of images first and with increasing strength also to low frequencies. Therefore, denoising can be seen as autoregression in the frequency domain (trying to find high freuqencies gradually from all lower frequencies).
 
 
 Topic 2
@@ -16,3 +16,5 @@ Supervision: Jannik @ CEALS
 Name: Beta-VAE for latent generative models in climate 
 Resources: 
   - https://sander.ai/2025/04/15/latents.html
+
+In own words: VAEs are autoencoders that produce a probability distribution over the latent space. The hyperparameter beta defines the relative strength of the reconstruction and KL-loss. The KL-loss preserves proximity of the predicted distribution to the prior.
