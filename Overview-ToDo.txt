@@ -1,0 +1,18 @@
+Overview over ToDos for Research Projects
+
+- Read recommended papers
+- Summarize papers in own words
+
+- Generate diagram of workflow/components
+
+- Learn workflow on ML cluster
+
+- Acquire & overview training data
+- Understand transformation of training data in detail
+- Implement & conduct training data transformation
+
+- Understand training objective in detail
+- Set up training scaffolding
+
+- Understand Transformer architecture/ autoregression in detail
+- Train small architecture and interpret results
