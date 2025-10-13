@@ -1,0 +1,23 @@
+Own Summary of Background Reading Papers
+----------------------------------------
+
+Earth system models (ESMs) can forecast climate trends, but are computationally limited to comparatively low spatial resolutions.
+Higher resolution is required to study e.g. the effects of climate change. The idea of downscaling is to feed the ESM predictions into a model that upscales the resolution of the predictions.
+
+For this, a number of methods have been proposed:
+
+-- Diffusion models:
+Interpret the input as noise, from which the denoised image shall be reconstructed. This is done by training a network to predict a denoised version from the training data with noise added, and punishing deviations from the original data. The network can be for example an U-Net (Convolutions) or a Transformer (DiT).
+Drawback: Inference requires many network evaluations to numerically integrate the diffusion process differential equation.
+
+-- Consistency Models:
+TODO (Maybe not so important?)
+
+-- Autoregressive models:
+An autoregressive model is a model for data that has some kind of sequence X_i.
+It predicts the next datum as X_i = f(theta, X_:i-1, epsilon).
+Here, theta are the model parameters, X_:i-1 are all previous data and epsilon is random noise.
+For example, LLMs use autoregressive modelling to predict the next token in a sequence of tokens via masked transformers.
+
+--- Visual Autoregression (VAR):
+An autoregressive model that predicts in each step an image with higher resolution than the last step in order to upscale the image. 
