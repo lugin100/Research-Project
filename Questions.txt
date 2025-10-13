@@ -1,0 +1,6 @@
+How does the workflow on the cluster work?
+
+Do we want our autoregressive process to increase the resolution of the image in every step (like for the visual autoregressive modelling from https://arxiv.org/abs/2404.02905) or do we want to start with the imputed higher resolution input and then autoregressively add detail (higher frequencies)?
+
+Where is the data available?
+
