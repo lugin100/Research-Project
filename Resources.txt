@@ -16,9 +16,12 @@ Packages:
 -- xarray
 	Labeled numpy array wrapper, used for geodata
 	https://pypi.org/project/xarray/
+-- torch harmonics
+	Quick spherical harmonics transform of geodata
+	https://pypi.org/project/torch-harmonics/	
 -- Weatherbench
 	Evaluation suite for weather predictions (Losses)
 	https://weatherbench-x.readthedocs.io/en/latest/
 -- Weights and Biases
 	Training documentation and tracking suite
-	https://wandb.ai/site/weave/^
+	https://wandb.ai/site/weave/
