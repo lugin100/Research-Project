@@ -16,3 +16,11 @@ Overview over ToDos for Research Projects
 
 - Understand Transformer architecture/ autoregression in detail
 - Train small architecture and interpret results
+
+
+
+- Xarray Daten laden
+- SHT anwenden
+- PyTorch Dataset
+- Transformer Architekturen anschauen
+- torch lightning anschauen
