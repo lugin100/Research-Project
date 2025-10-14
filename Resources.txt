@@ -1,0 +1,24 @@
+Overview over resources that are not citations/papers
+-----------------------------------------------------
+
+Blog Post:
+
+-- Diffusion is spectral autoregression
+	https://sander.ai/2024/09/02/spectral-autoregression.html
+-- FlexAttention Pytorch
+	Flexible masking for attention mechanisms for pytorch
+	https://pytorch.org/blog/flexattention/
+
+Packages:
+-- einops
+	Einstein summation for tensors
+	https://pypi.org/project/einops/
+-- xarray
+	Labeled numpy array wrapper, used for geodata
+	https://pypi.org/project/xarray/
+-- Weatherbench
+	Evaluation suite for weather predictions (Losses)
+	https://weatherbench-x.readthedocs.io/en/latest/
+-- Weights and Biases
+	Training documentation and tracking suite
+	https://wandb.ai/site/weave/^
