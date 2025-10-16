@@ -5,3 +5,7 @@
 
 # local data
 data
+
+# Byte code
+__pycache__
+*.pyc
