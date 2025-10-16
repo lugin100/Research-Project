@@ -16,3 +16,17 @@ def download_data(level, timepoint, variable, path=None):
     save_file = f"data/{variable}_level={level}_time={timepoint}.zarr"
     selection.to_zarr(save_file, mode="w-", zarr_format=2, consolidated=False)
 
+def load_data(level, timepoint, variable):
+    """
+    Load ERA5 data at select level, timepoint and variable
+    Look up local storage; if not available, download first
+    """
+    save_file = f"data/{variable}_level={level}_time={timepoint}.zarr"
+    try:
+        data = xr.open_zarr(save_file, zarr_format=2, consolidated=False)
+    except:
+        print("load_data: Falling back to download, might take a while")
+        download_data(level, timepoint, variable)
+        data = xr.open_zarr(save_file, zarr_format=2, consolidated=False)
+    finally:
+        return data
