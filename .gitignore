@@ -2,3 +2,6 @@
 .venv
 # vs code specific things
 .vscode
+
+# local data
+data
