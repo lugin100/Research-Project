@@ -4,6 +4,8 @@ matplotlib
 
 einops
 
+gcsfs
+zarr
 xarray
 
 torch-harmonics
