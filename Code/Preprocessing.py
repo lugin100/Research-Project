@@ -1,4 +1,6 @@
 import xarray as xr
+import torch_harmonics as th
+import torch
 
 default_path = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
 
@@ -30,3 +32,11 @@ def load_data(level, timepoint, variable):
         data = xr.open_zarr(save_file, zarr_format=2, consolidated=False)
     finally:
         return data
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+def transform(data):
+    data = torch.as_tensor(data.to_dataarray().values).squeeze()
+    (nlat, nlon) = data.shape
+    sht = th.RealSHT(nlat, nlon, grid="equiangular").to(device)
+    return sht(data.to(device))
