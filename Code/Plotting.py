@@ -29,3 +29,16 @@ def plot_tensor_as_map(data, show=True, save_name=None):
     if show:
         plt.show()
 
+
+def plot_coeffs_as_img(data, show=True, save_name=None):
+    assert isinstance(data, torch.Tensor)
+    data = data.cpu().numpy()
+    plt.imshow(data, norm=LogNorm())
+    plt.colorbar()
+    if save_name is not None:
+        path = "Figures/" + save_name + ".pdf"
+        print(path)
+        plt.savefig(path)
+    if show:
+        plt.show()
+
