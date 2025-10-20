@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 def run():
     LEVEL = 500
-    TIMEPOINT = "2023-01-10T18:00:00"
+    TIMEPOINT = slice("1970", "1972")
     VARIABLE = "wind_speed"
 
     dataset = WeatherDataset("wind_speed", TIMEPOINT)

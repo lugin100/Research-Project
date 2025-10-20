@@ -5,7 +5,7 @@ from matplotlib.colors import LogNorm
 
 plt.rcParams.update({'font.size': 16})
 
-def plot_io(show, save_name):
+def plot_io(show=True, save_name=None):
     if save_name is not None:
         path = "Figures/" + save_name + ".pdf"
         print(path)
