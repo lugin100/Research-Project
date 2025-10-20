@@ -16,7 +16,6 @@ def plot_xarray_as_map(data, show=True, save_name=None):
     data.transpose().plot()
     plot_io(show, save_name)
 
-
 def plot_tensor_as_map(data, show=True, save_name=None):
     assert isinstance(data, torch.Tensor)
     data = data.cpu().numpy()
@@ -26,8 +25,6 @@ def plot_tensor_as_map(data, show=True, save_name=None):
     plt.colorbar()
     plot_io(show, save_name)
 
-
-
 def plot_coeffs_as_img(data, show=True, save_name=None):
     assert isinstance(data, torch.Tensor)
     data = data.cpu().numpy()
@@ -35,4 +32,14 @@ def plot_coeffs_as_img(data, show=True, save_name=None):
     plt.colorbar()
     plot_io(show, save_name)
 
+def plot_coeffs_as_hist(data, show=True, save_name=None):
+    assert isinstance(data, torch.Tensor)
+    data = data.cpu().numpy()
+    plt.hist(data.flatten(), log=True)
+    plot_io(show, save_name)
 
+def plot_coeffs_over_m(data, show=True, save_name=None):
+    assert isinstance(data, torch.Tensor)
+    data = data.cpu().numpy()
+    plt.plot(data.mean(axis=0))
+    plot_io(show, save_name)
