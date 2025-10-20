@@ -6,6 +6,6 @@ einops
 
 gcsfs
 zarr
-xarray
+xarray[io]
 
 torch-harmonics

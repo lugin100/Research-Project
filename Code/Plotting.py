@@ -4,8 +4,8 @@ import torch
 
 
 def plot_xarray_as_map(data, show=True, save_name=None):
-    assert isinstance(data, xr.Dataset)
-    data.to_dataarray().transpose().plot()
+    assert isinstance(data, xr.DataArray)
+    data.transpose().plot()
     if save_name is not None:
         path = "Figures/" + save_name + ".pdf"
         print(path)

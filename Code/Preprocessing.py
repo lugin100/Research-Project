@@ -12,27 +12,26 @@ def download_data(level, timepoint, variable, path=None):
     Download ERA5 data at select level, timepoint and variable
     and save it locally
     """
-    if path is None:
-        path = DEFAULT_PATH
+    path = path if path is not None else DEFAULT_PATH
     
     data_view = xr.open_zarr(path)
     selection = data_view.sel(level=level, time=timepoint)[variable]
     
-    save_file = f"data/{variable}_level={level}_time={timepoint}.zarr"
-    selection.to_zarr(save_file, mode="w-", zarr_format=2, consolidated=False)
+    save_file = f"data/{variable}_level={level}_time={timepoint}.nc"
+    selection.to_netcdf(save_file, mode="w")
 
 def load_data(level, timepoint, variable):
     """
     Load ERA5 data at select level, timepoint and variable
     Look up local storage; if not available, download first
     """
-    save_file = f"data/{variable}_level={level}_time={timepoint}.zarr"
+    save_file = f"data/{variable}_level={level}_time={timepoint}.nc"
     try:
-        data = xr.open_zarr(save_file, zarr_format=2, consolidated=False)
+        data = xr.open_dataarray(save_file)
     except:
         print("load_data: Falling back to download, might take a while")
         download_data(level, timepoint, variable)
-        data = xr.open_zarr(save_file, zarr_format=2, consolidated=False)
+        data = xr.open_dataarray(save_file)
     finally:
         return data
 
