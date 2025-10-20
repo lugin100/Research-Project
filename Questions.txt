@@ -7,14 +7,19 @@ Do we want our autoregressive process to increase the resolution of the image in
 Where is the data available?
 -> At ./mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global
 on the cluster
+-------------------------------------------------------------
 
 Wind speed is a vector. Or do we just look at its magnitude? If not, what are the variable names?
 
-You load the dataset into RAM in the dataset init, not in the getitem method. Is this better, becuase the dataset is large enough to completely fits into RAM and materializing it in the getitem would slow down the dataloader? Or is it to standardize the data?
+You load the dataset into RAM in the dataset init, not in the getitem method. 
+Is this better, becuase the dataset is large enough to completely fits into RAM and materializing it in the getitem would slow down the dataloader? Or is it to standardize the data?
 
 Why is the function called RealSHT if the output is complex?
-Should I cut the imaginary part? Or take the absolute value?
+In my experiments, the imaginary part was necessary to reconstruct the original data!
+How should this be handled?
 
+Have you deviated in any way from the vscode tutorial?
+Why does my config not work?
 
 
 
