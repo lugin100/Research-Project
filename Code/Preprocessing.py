@@ -50,16 +50,16 @@ class WeatherDataset(torch.utils.data.Dataset):
             return
         #self.data = data.sel(time = time_slice, level=level)
         self.data = data
-        print(data)
+        #print(data)
         self.materialize()
-        print(data.shape)
+        #print(data.shape)
         self.standardize()
 
     def materialize(self):
         '''
         Materialize lazy loaded xarray into pytorch tensor
         '''
-        self.data = torch.as_tensor(self.data.values)
+        self.data = torch.as_tensor(self.data.values).to(DEVICE)
 
     def standardize(self):
         self.means = self.data.mean(0, keepdim=True)
@@ -74,11 +74,11 @@ class WeatherDataset(torch.utils.data.Dataset):
 
 
 def sh_transform(data):
-    (nlat, nlon) = data.shape
+    (N, nlat, nlon) = data.shape
     sht = th.RealSHT(nlat, nlon, grid="equiangular").to(DEVICE)
     return sht(data.to(DEVICE))
 
 def inv_sh_transfrom(coeffs):
-    (lmax, mmax) = coeffs.shape
-    inv_sht = th.InverseRealSHT(lmax, 2*mmax-1, grid="equiangular").to(DEVICE)
+    (N, lmax, mmax) = coeffs.shape
+    inv_sht = th.InverseRealSHT(lmax, 2*(mmax-1), grid="equiangular").to(DEVICE)
     return inv_sht(coeffs.to(DEVICE))
