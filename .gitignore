@@ -9,3 +9,6 @@ data
 # Byte code
 __pycache__
 *.pyc
+
+# Main class to quickly test out stuff
+Code/Playground.py
