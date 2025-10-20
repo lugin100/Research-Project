@@ -2,7 +2,9 @@ import xarray as xr
 import torch_harmonics as th
 import torch
 
-default_path = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
+DEFAULT_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
+
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def download_data(level, timepoint, variable, path=None):
@@ -11,7 +13,8 @@ def download_data(level, timepoint, variable, path=None):
     and save it locally
     """
     if path is None:
-        path = default_path
+        path = DEFAULT_PATH
+    
     data_view = xr.open_zarr(path)
     selection = data_view.sel(level=level, time=timepoint)[variable]
     
@@ -33,15 +36,47 @@ def load_data(level, timepoint, variable):
     finally:
         return data
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+class WeatherDataset(torch.utils.data.Dataset):
+
+    def __init__(self, variable, time_slice, level=500, path = None):
+        path = path if path is not None else DEFAULT_PATH
+        path += variable + ".nc"
+        try:
+            print("Loading dataset from {path}")
+            data = xr.open_dataarray(path)
+        except:
+            print("Could not find dataset!")
+            return
+        self.data = data.sel(time = time_slice, level=level)
+        print(data)
+        materialize()
+        print(data.shape)
+        normalize()
+
+    def materialize(self):
+        '''
+        Materialize lazy loaded xarray into pytorch tensor
+        '''
+        self.data = torch.as_tensor(self,data.values)
+
+    def standardize(self):
+        self.means = self.data.mean(0, keepdim=True)
+        self.stds = self.data.std(0, keepdim=True)
+        self.data = (self.data - self.means) / self.stds
+
+    def __len__(self):
+        return len(self)
+
+    def __getitem__(self, idx):
+        return data[idx]
+
 
 def sh_transform(data):
-    data = torch.as_tensor(data.to_dataarray().values).squeeze()
     (nlat, nlon) = data.shape
-    sht = th.RealSHT(nlat, nlon, grid="equiangular").to(device)
-    return sht(data.to(device))
+    sht = th.RealSHT(nlat, nlon, grid="equiangular").to(DEVICE)
+    return sht(data.to(DEVICE))
 
 def inv_sh_transfrom(coeffs):
     (lmax, mmax) = coeffs.shape
-    inv_sht = th.InverseRealSHT(lmax, 2*mmax-1, grid="equiangular").to(device)
-    return inv_sht(coeffs.to(device))
+    inv_sht = th.InverseRealSHT(lmax, 2*mmax-1, grid="equiangular").to(DEVICE)
+    return inv_sht(coeffs.to(DEVICE))
