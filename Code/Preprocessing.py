@@ -70,7 +70,7 @@ class WeatherDataset(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        return self.data[idx].mT
 
 
 def sh_transform(data):
