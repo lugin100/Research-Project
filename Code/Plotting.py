@@ -3,16 +3,18 @@ import xarray as xr
 import torch
 from matplotlib.colors import LogNorm
 
-
-def plot_xarray_as_map(data, show=True, save_name=None):
-    assert isinstance(data, xr.DataArray)
-    data.transpose().plot()
+def plot_io(show, save_name):
     if save_name is not None:
         path = "Figures/" + save_name + ".pdf"
         print(path)
         plt.savefig(path)
     if show:
         plt.show()
+
+def plot_xarray_as_map(data, show=True, save_name=None):
+    assert isinstance(data, xr.DataArray)
+    data.transpose().plot()
+    plot_io(show, save_name)
 
 
 def plot_tensor_as_map(data, show=True, save_name=None):
@@ -22,12 +24,8 @@ def plot_tensor_as_map(data, show=True, save_name=None):
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")    
     plt.colorbar()
-    if save_name is not None:
-        path = "Figures/" + save_name + ".pdf"
-        print(path)
-        plt.savefig(path)
-    if show:
-        plt.show()
+    plot_io(show, save_name)
+
 
 
 def plot_coeffs_as_img(data, show=True, save_name=None):
@@ -35,10 +33,6 @@ def plot_coeffs_as_img(data, show=True, save_name=None):
     data = data.cpu().numpy()
     plt.imshow(data, norm=LogNorm())
     plt.colorbar()
-    if save_name is not None:
-        path = "Figures/" + save_name + ".pdf"
-        print(path)
-        plt.savefig(path)
-    if show:
-        plt.show()
+    plot_io(show, save_name)
+
 
