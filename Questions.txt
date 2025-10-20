@@ -1,6 +1,20 @@
 How does the workflow on the cluster work?
+-> two stage tunnel for vscode remote code execution
 
 Do we want our autoregressive process to increase the resolution of the image in every step (like for the visual autoregressive modelling from https://arxiv.org/abs/2404.02905) or do we want to start with the imputed higher resolution input and then autoregressively add detail (higher frequencies)?
+-> The second. We want to predict higher SH moments from the lower ones
 
 Where is the data available?
+-> At ./mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global
+on the cluster
+
+Wind speed is a vector. Or do we just look at its magnitude? If not, what are the variable names?
+
+You load the dataset into RAM in the dataset init, not in the getitem method. Is this better, becuase the dataset is large enough to completely fits into RAM and materializing it in the getitem would slow down the dataloader? Or is it to standardize the data?
+
+
+
+
+
+
 
