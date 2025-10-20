@@ -12,6 +12,8 @@ Wind speed is a vector. Or do we just look at its magnitude? If not, what are th
 
 You load the dataset into RAM in the dataset init, not in the getitem method. Is this better, becuase the dataset is large enough to completely fits into RAM and materializing it in the getitem would slow down the dataloader? Or is it to standardize the data?
 
+Why is the function called RealSHT if the output is complex?
+Should I cut the imaginary part? Or take the absolute value?
 
 
 
