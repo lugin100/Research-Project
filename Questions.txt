@@ -18,8 +18,10 @@ Why is the function called RealSHT if the output is complex?
 In my experiments, the imaginary part was necessary to reconstruct the original data!
 How should this be handled?
 
-Have you deviated in any way from the vscode tutorial?
+Have you deviated in any way from the vscode cluster tutorial?
 Why does my config not work?
+
+Why is my linear model worse (loss 0.088) than just predicting all zeros (loss 0.046)?
 
 
 
