@@ -1,3 +1,5 @@
+14.10.25
+
 How does the workflow on the cluster work?
 -> two stage tunnel for vscode remote code execution
 
@@ -8,22 +10,36 @@ Where is the data available?
 -> At ./mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global
 on the cluster
 -------------------------------------------------------------
+21.10.25
 
 Wind speed is a vector. Or do we just look at its magnitude? If not, what are the variable names?
+-> Variable "wind speed" is the magnitude. The vector is split into coordinates wind_speed_u" and "wind_speed_v".
+To use these, one could concatenate them in the input.
+
 
 You load the dataset into RAM in the dataset init, not in the getitem method. 
-Is this better, becuase the dataset is large enough to completely fits into RAM and materializing it in the getitem would slow down the dataloader? Or is it to standardize the data?
+Is this better, because the dataset is large enough to completely fits into RAM and materializing it in the getitem would slow down the dataloader? Or is it to standardize the data?
+-> The loading from disk is pretty slow with constant IO overead,
+so doing it once is way faster than calling it many times in getitems.
+So this is better, especially because the whole dataset fits into the cluster node RAM.
 
 Why is the function called RealSHT if the output is complex?
 In my experiments, the imaginary part was necessary to reconstruct the original data!
 How should this be handled?
+-> It is called realSHT because it expects the input to be real, which speeds up computation (similar to SVD for symmetric matrices).
+The output is complex and must be dealt with in this way. While there is rudimentary complex dtype support in pytorch,
+for more complex models (transformer) this might not work. Solution: tensor.view_as_real(), which stacks real and imaginary part along a new dimension.
 
 Have you deviated in any way from the vscode cluster tutorial?
 Why does my config not work?
+-> Should now finally be fixed (connecting to compute node works)
+Still need to figure out how to connect from VSCode
 
 Why is my linear model worse (loss 0.088) than just predicting all zeros (loss 0.046)?
+-> Predicting all zeros is not easy, and a linear model is very inadequate for this kind of problem
 
-
+-------------------------------------------------------------
+28.10.25
 
 
 
