@@ -1,10 +1,9 @@
 import xarray as xr
-import torch_harmonics as th
 import torch
+import Functions
 
 DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
 
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def download_data(level, time, variable, path=None):
@@ -59,7 +58,7 @@ class WeatherDataset(torch.utils.data.Dataset):
         '''
         Materialize lazy loaded xarray into pytorch tensor
         '''
-        self.data = torch.as_tensor(self.data.values).to(DEVICE)
+        self.data = torch.as_tensor(self.data.values).to(Functions.DEVICE)
 
     def standardize(self):
         self.means = self.data.mean(0, keepdim=True)
@@ -72,13 +71,3 @@ class WeatherDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         return self.data[idx].mT
 
-
-def sh_transform(data):
-    (N, nlat, nlon) = data.shape
-    sht = th.RealSHT(nlat, nlon, grid="equiangular").to(DEVICE)
-    return sht(data.to(DEVICE))
-
-def inv_sh_transfrom(coeffs):
-    (N, lmax, mmax) = coeffs.shape
-    inv_sht = th.InverseRealSHT(lmax, 2*(mmax-1), grid="equiangular").to(DEVICE)
-    return inv_sht(coeffs.to(DEVICE))

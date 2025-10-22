@@ -1,5 +1,6 @@
-from Preprocessing import *
+from Preprocessing import WeatherDataset
 from Plotting import *
+from Functions import *
 import torch
 from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt

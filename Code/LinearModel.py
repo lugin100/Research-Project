@@ -1,5 +1,6 @@
 from torch import nn
 from Preprocessing import *
+from Functions import *
 from torch.utils.data import DataLoader
 
 dim_in = 60
