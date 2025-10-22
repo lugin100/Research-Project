@@ -11,6 +11,7 @@ def download_data(level, time, variable, path=None):
     Download ERA5 data at select level, time and variable
     and save it locally
     """
+    return DeprecationWarning("Only for local use")
     path = path if path is not None else DOWNLOAD_PATH
     
     data_view = xr.open_zarr(path)
@@ -24,6 +25,7 @@ def load_data(level, time, variable):
     Load ERA5 data at select level, time and variable
     Look up local storage; if not available, download first
     """
+    return DeprecationWarning("Only for local use")
     save_file = f"data/{variable}_level={level}_time={time}.nc"
     try:
         data = xr.open_dataarray(save_file)
@@ -37,7 +39,7 @@ def load_data(level, time, variable):
 class WeatherDataset(torch.utils.data.Dataset):
 
     LOCAL_PATH = "data/wind_speed_level=500_time=slice('1970', '1972', None)"
-    
+    DATA_PATH = "./mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global"
     def __init__(self, variable, time_slice, level=500, path = None):
         path = path if path is not None else self.LOCAL_PATH
         path += ".nc"
@@ -47,16 +49,14 @@ class WeatherDataset(torch.utils.data.Dataset):
         except:
             print("Could not find dataset!")
             return
-        #self.data = data.sel(time = time_slice, level=level)
+        self.data = data.sel(time = time_slice)#, level=level)
         self.data = data
-        #print(data)
         self.materialize()
-        #print(data.shape)
         self.standardize()
 
     def materialize(self):
         '''
-        Materialize lazy loaded xarray into pytorch tensor
+        Materialize lazy loaded xarray into pytorch tensor on DEVICE
         '''
         self.data = torch.as_tensor(self.data.values).to(Functions.DEVICE)
 
