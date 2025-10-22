@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
+from matplotlib.colors import LogNorm
 import xarray as xr
 import torch
-from matplotlib.colors import LogNorm
 
 plt.rcParams.update({'font.size': 16})
 
