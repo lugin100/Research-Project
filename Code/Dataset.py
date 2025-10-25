@@ -39,17 +39,18 @@ def load_data(level, time, variable):
 class WeatherDataset(torch.utils.data.Dataset):
 
     LOCAL_PATH = "data/wind_speed_level=500_time=slice('1970', '1972', None)"
-    DATA_PATH = "./mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global"
+    DATA_PATH = "/mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global"
     def __init__(self, variable, time_slice, level=500, path = None):
         path = path if path is not None else self.LOCAL_PATH
         path += ".nc"
         try:
             print(f"Loading dataset from {path}")
-            data = xr.open_dataarray(path)
+            data = xr.open_dataset(path)
         except:
             print("Could not find dataset!")
             return
-        self.data = data.sel(time = time_slice)#, level=level)
+        data = data[variable]
+        data = data.sel(time = time_slice, level=level)
         self.data = data
         self.materialize()
         self.standardize()
