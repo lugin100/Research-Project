@@ -48,16 +48,24 @@ class TransformerModel(nn.Module):
         super().__init__()
         self.embedding = torch.nn.Embedding(V, D)
         self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=n_heads, batch_first=True, **kwargs)
-        self.mask = create_mask(I)
+        self.mask = create_mask(I, L)
         self.output_proj = torch.nn.Linear(D, V)
 
 
     def forward(self, input):
-        (B, I) = input.shape
+        #input.shape # (B, I)
         input = self.embedding(input) # (B, I, D)
         output = self.transformer(input, mask=self.mask) # (B, I, D)
         logits = self.output_proj(output) # (B, I, V)
         return logits
+
+
+    def infer(self, input):
+        for index in range(self.L, self.I):
+            pred = self.forward(input)
+            next_token = torch.argmax(pred[:,index], dim=-1)
+            input[:,index] = next_token
+        return input
 
 
 model = TransformerModel().to(DEVICE)
