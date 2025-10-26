@@ -49,7 +49,7 @@ class TransformerModel(nn.Module):
         self.embedding = torch.nn.Embedding(V, D)
         self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
         self.mask = create_mask(T, L)
-        self.output_proj = torch.nn.Linear(D, V)
+        self.unembedding = torch.nn.Linear(D, V)
         self.L = L
         self.T = T
 
@@ -58,7 +58,7 @@ class TransformerModel(nn.Module):
         #input.shape # (B, T)
         input = self.embedding(input) # (B, T, D)
         output = self.transformer(input, mask=self.mask) # (B, T, D)
-        logits = self.output_proj(output) # (B, T, V)
+        logits = self.unembedding(output) # (B, T, V)
         return logits
 
 
@@ -70,16 +70,14 @@ class TransformerModel(nn.Module):
         return input
 
 
-model = TransformerModel().to(DEVICE)
+model = TransformerModel(T=121, L=60, V=1000, D=512, H=4).to(DEVICE)
 model.train()
 
 LEARN_RATE = 5e-3
-BATCH_SIZE = 1000
-EPOCHS = 40
-
+B = 100
+EPOCHS = 10
 dataset = WeatherDataset("wind_speed", slice("1970", "1971"))
-print(dataset.__len__())
-dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=B, shuffle=True)
 
 loss_fn = torch.nn.MSELoss(reduction="mean")
 
@@ -87,7 +85,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=LEARN_RATE)
 
 
 testset = WeatherDataset("wind_speed", slice("1971", "1972"))
-test_loader = DataLoader(testset, batch_size=BATCH_SIZE, shuffle=True)
+test_loader = DataLoader(testset, batch_size=B, shuffle=True)
 
 
 def evaluate():
@@ -97,8 +95,9 @@ def evaluate():
         for batch in test_loader:
             originals = batch
             coeffs = sh_transform(batch)
-            _input = coeffs[:,:dim_in, :dim_in]
-            pred = model(_input)
+            _input = flatten_coeffs(coeffs)
+            output = model.infer(_input)
+            pred = inv_sh_transfrom(output)
             test_loss += loss_fn(pred, originals).item()
         test_loss /= len(test_loader)
         print(test_loss)
@@ -110,8 +109,9 @@ for epoch in range(EPOCHS):
     for i, batch in enumerate(dataloader):
         originals = batch
         coeffs = sh_transform(batch)
-        _input = coeffs[:,:dim_in, :dim_in]
-        pred = model(_input)
+        _input = flatten_coeffs(coeffs)
+        output = model.infer(_input)
+        pred = inv_sh_transfrom(output)
         loss = loss_fn(pred, originals)
 
         loss.backward()
