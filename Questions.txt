@@ -41,5 +41,12 @@ Why is my linear model worse (loss 0.088) than just predicting all zeros (loss 0
 -------------------------------------------------------------
 28.10.25
 
+When not specifying lmax, mmax in the RealSHT, they are calculated as lmax = nlat and mmax = nlon // 2 + 1.
+Because our input has nlon = 2*nlat, the resulting output dimension is lmax = nlat and mmax = nlat + 1.
+But the last column is always 0 in my experiments! Can I just cut it such that I can handle the coefficients as a square matrix?
+Or better, pass lmax = nlat and mmax = nlat?
+
+Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size?
+
 
 
