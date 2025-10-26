@@ -46,6 +46,14 @@ Because our input has nlon = 2*nlat, the resulting output dimension is lmax = nl
 But the last column is always 0 in my experiments! Can I just cut it such that I can handle the coefficients as a square matrix?
 Or better, pass lmax = nlat and mmax = nlat?
 
+Do I even need tokenization?
+In a Language transformer, the input is tokenized and pushed through a learned embedding into vectors.
+But in our case, we do not have "natural" tokens, but already (complex) numbers as input.
+We could view them as real and push them through a linear layer to a higher "embedding" dimension.
+Also for the output, we are not constrained to picking tokens, but complex numbers are completely fine, they are what we want.
+Tokenization and subsequent embedding is just a temporary discretization of the input vectors which introduces errors we cannot diminish!
+
+If we need tokenization:
 Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size?
 
 
