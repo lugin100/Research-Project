@@ -1,6 +1,6 @@
 import xarray as xr
 import torch
-import Functions
+from Code.Functions import DEVICE
 
 DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
 
@@ -45,13 +45,13 @@ class WeatherDataset(torch.utils.data.Dataset):
         path += ".nc"
         try:
             print(f"Loading dataset from {path}")
-            data = xr.open_dataset(path)
+            data = xr.open_dataarray(path)
         except:
             print("Could not find dataset!")
             return
-        data = data[variable]
-        data = data.sel(time = time_slice, level=level)
-        self.data = data
+        #data = data[variable]
+        #data = data.sel(time = time_slice, level=level)
+        self.data = data.values
         self.materialize()
         self.standardize()
 
@@ -59,7 +59,7 @@ class WeatherDataset(torch.utils.data.Dataset):
         '''
         Materialize lazy loaded xarray into pytorch tensor on DEVICE
         '''
-        self.data = torch.as_tensor(self.data.values).to(Functions.DEVICE)
+        self.data = torch.as_tensor(self.data).to(DEVICE)
 
     def standardize(self):
         self.means = self.data.mean(0, keepdim=True)
