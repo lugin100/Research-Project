@@ -27,41 +27,43 @@ class MultiHeadAttention(nn.Module):
         return self.out_proj(attention)
 '''
 
-def create_mask(I: int, L: int):
+def create_mask(T: int, L: int):
     '''
     Creates causal mask for attention.
-     I: the total length of the sequence.
+     T: the total length of the sequence.
      L: the length of the input sequence.
      The first L tokens can attend to all previous tokens and themselves.
      The tokens after L can only attend to previous tokens.
     '''
-    mask = torch.full((I,I), 0.0)
-    mask -= torch.full((I,I), float("inf")).triu(diagonal=1)
-    mask[L:,L:] -= torch.full((I-L,I-L), float("inf")).triu(diagonal=0)
+    mask = torch.full((T,T), 0.0)
+    mask -= torch.full((T,T), float("inf")).triu(diagonal=1)
+    mask[L:,L:] -= torch.full((T-L,T-L), float("inf")).triu(diagonal=0)
     return mask
 
 
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, I: int, L: int, V: int, D: int, n_heads, **kwargs):
+    def __init__(self, T: int, L: int, V: int, D: int, H, **kwargs):
         super().__init__()
         self.embedding = torch.nn.Embedding(V, D)
-        self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=n_heads, batch_first=True, **kwargs)
-        self.mask = create_mask(I, L)
+        self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
+        self.mask = create_mask(T, L)
         self.output_proj = torch.nn.Linear(D, V)
+        self.L = L
+        self.T = T
 
 
     def forward(self, input):
-        #input.shape # (B, I)
-        input = self.embedding(input) # (B, I, D)
-        output = self.transformer(input, mask=self.mask) # (B, I, D)
-        logits = self.output_proj(output) # (B, I, V)
+        #input.shape # (B, T)
+        input = self.embedding(input) # (B, T, D)
+        output = self.transformer(input, mask=self.mask) # (B, T, D)
+        logits = self.output_proj(output) # (B, T, V)
         return logits
 
 
     def infer(self, input):
-        for index in range(self.L, self.I):
+        for index in range(self.L, self.T):
             pred = self.forward(input)
             next_token = torch.argmax(pred[:,index], dim=-1)
             input[:,index] = next_token
