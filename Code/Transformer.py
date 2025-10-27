@@ -1,8 +1,12 @@
 import torch.nn.functional
 from torch import nn
-from Dataset import WeatherDataset
-from Functions import *
+
+from Code.CoeffDataset import CoeffDataset
+from Code.Functions import *
 from torch.utils.data import DataLoader
+
+from Code.Tokenizer import ClusteringTokenizer
+
 '''
 class MultiHeadAttention(nn.Module):
     def __init__(self, input_dim: int, embedding_dim: int, n_heads: int, dropout_prob: float = 0.0):
@@ -47,8 +51,9 @@ class TransformerModel(nn.Module):
     def __init__(self, T: int, L: int, V: int, D: int, H, **kwargs):
         super().__init__()
         self.embedding = torch.nn.Embedding(V, D)
+        #self.embedding = nn.Linear(2, D)
         self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
-        self.mask = create_mask(T, L)
+        self.mask = create_mask(T, L).to(DEVICE)
         self.unembedding = torch.nn.Linear(D, V)
         self.L = L
         self.T = T
@@ -57,35 +62,42 @@ class TransformerModel(nn.Module):
     def forward(self, input):
         #input.shape # (B, T)
         input = self.embedding(input) # (B, T, D)
-        output = self.transformer(input, mask=self.mask) # (B, T, D)
+        output = self.transformer(input, src_mask=self.mask) # (B, T, D)
         logits = self.unembedding(output) # (B, T, V)
         return logits
 
 
     def infer(self, input):
+        # input.shape # (B, T)
         for index in range(self.L, self.T):
-            pred = self.forward(input)
-            next_token = torch.argmax(pred[:,index], dim=-1)
-            input[:,index] = next_token
+            pred = self.forward(input) # (B, T, V)
+            indices = torch.argmax(pred[:,index,:], dim=-1)
+            input[:,index] = indices
         return input
 
-
-model = TransformerModel(T=121, L=60, V=1000, D=512, H=4).to(DEVICE)
-model.train()
+N = 121
+T = int(N*(N+1)/2)
+L = int(60*61/2)
+model = TransformerModel(T=T, L=L, V=500, D=512, H=4).to(DEVICE)
 
 LEARN_RATE = 5e-3
-B = 100
+B = 10
 EPOCHS = 10
-dataset = WeatherDataset("wind_speed", slice("1970", "1971"))
+dataset = CoeffDataset("data/coeffs_wind_speed_level=500_time=slice('1970', '1972').pt")
 dataloader = DataLoader(dataset, batch_size=B, shuffle=True)
 
 loss_fn = torch.nn.MSELoss(reduction="mean")
 
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARN_RATE)
 
-
-testset = WeatherDataset("wind_speed", slice("1971", "1972"))
+testset = CoeffDataset("data/coeffs_wind_speed_level=500_time=slice('1970', '1972').pt")
 test_loader = DataLoader(testset, batch_size=B, shuffle=True)
+
+kmeans_train_data = torch.view_as_real(next(iter(dataloader)))
+kmeans_train_data = flatten_coeffs(kmeans_train_data).reshape((-1,2))
+
+V = 500
+tokenizer = ClusteringTokenizer(train_data=kmeans_train_data, V=V)
 
 
 def evaluate():
@@ -93,28 +105,29 @@ def evaluate():
     with torch.no_grad():
         test_loss = 0
         for batch in test_loader:
-            originals = batch
-            coeffs = sh_transform(batch)
-            _input = flatten_coeffs(coeffs)
-            output = model.infer(_input)
-            pred = inv_sh_transfrom(output)
-            test_loss += loss_fn(pred, originals).item()
+            coeffs = torch.view_as_real(flatten_coeffs(batch))
+            tokens = tokenizer.tokenize(coeffs)
+            #output = model.infer(tokens)
+            output = tokens # Identity function to try out
+            output = tokenizer.detokenize(output)
+            test_loss += loss_fn(coeffs, torch.tensor(output).to(DEVICE)).item()
         test_loss /= len(test_loader)
         print(test_loss)
 
 
-# Train Loop
-for epoch in range(EPOCHS):
-    print(f"Epoch {epoch+1}\n")
-    for i, batch in enumerate(dataloader):
-        originals = batch
-        coeffs = sh_transform(batch)
-        _input = flatten_coeffs(coeffs)
-        output = model.infer(_input)
-        pred = inv_sh_transfrom(output)
-        loss = loss_fn(pred, originals)
+def train():
+    for epoch in range(EPOCHS):
+        model.train()
+        print(f"Epoch {epoch+1}\n")
+        for i, batch in enumerate(dataloader):
+            batch = batch.to(DEVICE)
+            input = flatten_coeffs(batch)
+            output = model.forward(input)
+            loss = loss_fn(output, input)
 
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-    evaluate()
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+        evaluate()
+
+evaluate()

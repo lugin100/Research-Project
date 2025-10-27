@@ -58,7 +58,9 @@ class ClusteringTokenizer:
 
     def tokenize(self, coeffs):
         coeffs = parse_array(coeffs).astype(np.float16)
-        return self.clustering.predict(coeffs)
+        shape = coeffs.shape
+        tokens = self.clustering.predict(coeffs.reshape(-1, shape[-1]))
+        return tokens.reshape(shape[:-1])
 
 
     def detokenize(self, tokens):
