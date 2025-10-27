@@ -6,6 +6,7 @@
 .idea
 # local data
 data
+Models
 
 # Byte code
 __pycache__
