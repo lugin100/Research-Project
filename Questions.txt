@@ -62,6 +62,9 @@ If we need tokenization:
 Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size, instead of a fixed discretization grid?
 If so, is the clustering or the (Gumbel-) Autoencoder a good approach?
 
+Also, tokenization and detokenization is not differentiable, so we cannot use a loss in the coefficients or the original data.
+Do I instead use cross entropy loss over predicted token distribution and correct token?
+
 Is the mask correct the way I designed it?
 
 
