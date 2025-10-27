@@ -50,8 +50,9 @@ Do I even need tokenization?
 In a Language transformer, the input is tokenized and pushed through a learned embedding into vectors.
 But in our case, we do not have "natural" tokens, but already (complex) numbers as input.
 We could view them as real and push them through a linear layer to a higher "embedding" dimension.
-Also for the output, we are not constrained to picking tokens, but complex numbers are completely fine, they are what we want.
+Also for the output, we are not constrained to picking tokens, but numbers are completely fine, they are what we want.
 Tokenization and subsequent embedding is just a temporary discretization of the input vectors which introduces errors we cannot diminish!
+Can we instead train the transformer to directly predict the output instead of logits for the tokens?
 
 If we need tokenization:
 Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size, instead of a fixed discretization grid?
