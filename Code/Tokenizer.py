@@ -1,13 +1,8 @@
 import numpy as np
-import torch
 import torch.nn.functional as F
-from matplotlib import pyplot as plt
 from sklearn.cluster import KMeans
 from torch import nn
-from torch.utils.data import DataLoader
-from triton.language import float16
 
-from Code.CoeffDataset import CoeffDataset
 from Code.Functions import *
 
 
@@ -46,28 +41,28 @@ class AutoencoderTokenizer(nn.Module):
         else:
             return F.softmax(gumbel_logits, dim=-1)
 
+
+def parse_array(array):
+    if isinstance(array, torch.Tensor):
+        return array.cpu().numpy()
+    if isinstance(array, np.ndarray):
+        return array
+    else:
+        raise TypeError("Must pass np array or torch tensor")
+
+
 class ClusteringTokenizer:
 
     def __init__(self, train_data, V: int):
         self.clustering = KMeans(n_clusters=V).fit(train_data.cpu())
 
-    def parse_array(self, array):
-        if isinstance(array, torch.Tensor):
-            return array.to(torch.float16).cpu().numpy()
-        if isinstance(array, np.ndarray):
-            return array.astype(float)
-        else:
-            raise TypeError("Must pass np array or torch tensor")
-
-
     def tokenize(self, coeffs):
-        coeffs = self.parse_array(coeffs)
-        print(coeffs.dtype)
+        coeffs = parse_array(coeffs).astype(np.float16)
         return self.clustering.predict(coeffs)
 
 
     def detokenize(self, tokens):
-        tokens = self.parse_array(tokens)
+        tokens = parse_array(tokens)
         return self.clustering.cluster_centers_[tokens]
 
 
