@@ -48,7 +48,7 @@ class AutoencoderTokenizer(nn.Module):
 
 
 model = AutoencoderTokenizer(dim_in = 2, V=500).to(DEVICE)
-model.load_state_dict(torch.load('tokenizer-gumbel-weights.pth', weights_only=True))
+model.load_state_dict(torch.load('Models/tokenizer-gumbel-weights.pth', weights_only=True))
 model.train()
 
 LEARN_RATE = 5e-3
@@ -100,7 +100,7 @@ def train():
 
 #train()
 #evaluate()
-#torch.save(model.state_dict(), 'tokenizer-gumbel-weights-v2.pth')
+#torch.save(model.state_dict(), 'Models/tokenizer-gumbel-weights-v2.pth')
 
 coeff_batch = torch.view_as_real(next(iter(dataloader)))
 coeff_batch = flatten_coeffs(coeff_batch).reshape((-1,2))
