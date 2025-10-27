@@ -1,0 +1,27 @@
+--- Experiments for tokenization strategy that does not increase loss significantly
+V = 500
+
+--- Loss in image domain ---
+Loss just through sh transform: 0.005325
+Through tokenizer/untokenizer with random weights (before training): 1.2577
+After training, lr=5e-3, 20 epochs: 0.01295
+						 40 epochs: 0.00695
+--> tokenizer-weights.pth
+
+BUT: Network does not learn one-hot vectors yet!
+Using argmax between encoder and decoder leads to loss of ~4000
+
+Using Gumbel Trick: Differentiable approximation of argmax in encoder during training, real argmax during inference)
+Starting from tokenizer-weights.pth, further 20 epochs
+--> Loss ~1.0, tokenizer-gumbel-weights.pth
+
+--- Switch to precomputed SH coefficients and loss in coefficient domain
+	in order to speed up learning (no backprop through SHT) ---
+--> Loss 0.000491
+Further 20 epochs of training with lr=5e-3 
+--> Loss 0.000433 Weight in tokenizer-gumbel-weigths-v2.pth
+
+--- KMeans Clustering:
+Create clusters based on single batch (B=50) of data.
+Tokenize: Predict cluster membership and interpret this as one-hot vector. -> Map all points to closest of V=500 cluster centers
+Loss: 3.62e-6
