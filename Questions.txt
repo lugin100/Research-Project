@@ -54,7 +54,7 @@ Also for the output, we are not constrained to picking tokens, but complex numbe
 Tokenization and subsequent embedding is just a temporary discretization of the input vectors which introduces errors we cannot diminish!
 
 If we need tokenization:
-Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size?
-
+Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size, instead of a fixed discretization grid?
+If so, is the clustering or the (Gumbel-) Autoencoder a good approach?
 
 
