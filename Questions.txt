@@ -62,4 +62,6 @@ If we need tokenization:
 Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size, instead of a fixed discretization grid?
 If so, is the clustering or the (Gumbel-) Autoencoder a good approach?
 
+Is the mask correct the way I designed it?
+
 
