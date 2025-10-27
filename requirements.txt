@@ -12,3 +12,5 @@ zarr
 xarray[io]
 
 torch-harmonics
+
+scikit-learn
