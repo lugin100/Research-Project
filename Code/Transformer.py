@@ -39,9 +39,9 @@ def create_mask(T: int, L: int):
      The first L tokens can attend to all previous tokens and themselves.
      The tokens after L can only attend to previous tokens.
     '''
-    mask = torch.full((T,T), 0.0)
-    mask -= torch.full((T,T), float("inf")).triu(diagonal=1)
-    mask[L:,L:] -= torch.full((T-L,T-L), float("inf")).triu(diagonal=0)
+    mask = torch.full((T,T), float("-inf"))
+    mask[:,:L] = 0  # all coeffs can attend to all coeffs with index < L
+    mask[torch.tril_indices(T,T,offset=-1)] = 0 # all coeffs can attend to all previous coeffs
     return mask
 
 
