@@ -44,11 +44,13 @@ Why is my linear model worse (loss 0.088) than just predicting all zeros (loss 0
 Can you help me with the
 > ImportError: libcudnn.so.9: cannot open shared object file: No such file or directory
 error when trying to import torch on the cluster?
+-> No idea.
 
 When not specifying lmax, mmax in the RealSHT, they are calculated as lmax = nlat and mmax = nlon // 2 + 1.
 Because our input has nlon = 2*nlat, the resulting output dimension is lmax = nlat and mmax = nlat + 1.
 But the last column is always 0 in my experiments! Can I just cut it such that I can handle the coefficients as a square matrix?
 Or better, pass lmax = nlat and mmax = nlat?
+-> Passing lmax and mmax such that the output is quadratic appears correct, makes intuitive sense and is what I should do.
 
 Do I even need tokenization?
 In a Language transformer, the input is tokenized and pushed through a learned embedding into vectors.
@@ -57,14 +59,30 @@ We could view them as real and push them through a linear layer to a higher "emb
 Also for the output, we are not constrained to picking tokens, but numbers are completely fine, they are what we want.
 Tokenization and subsequent embedding is just a temporary discretization of the input vectors which introduces errors we cannot diminish!
 Can we instead train the transformer to directly predict the output instead of logits for the tokens?
+-> Yes, we can! We indeed do not strictly need tokenization. But if we directly predict the next coefficients, we have the problem that uncertainty cannot be modelled and predicted, and thus, errors will propagate to the next token. The inference should not be completely determinstic!
+Two possible solutions:
+Idea 1: Predict a GMM over the next coefficient value.
+        Train it via NLL of the actual value given the GMM distribution.
+        During inference, sample from it for the next token.
+Idea 2: In the forward pass, calculate a prediction multiple (S) times, each time with
+        a little bit different noise added at some step.
+        This yields an empirical distribution of the prediction based on the S samples. Train with CRPS loss, which measures distance between empirical distribution and true value.
+        For inference, this automatically yields multiple samples of the output distribution.
+Choose Idea 1 for first implementation.
 
 If we need tokenization:
 Would it make sense to pre-train the tokenizer like an autoencoder to maximize the retained information for a given vocab size, instead of a fixed discretization grid?
 If so, is the clustering or the (Gumbel-) Autoencoder a good approach?
+-> Turns out we don't need tokenization. Answer would be:
+Grid discretization would probably be bad (as expected), KMeans is a good approach, but natural idea would be based on quantiles of the coefficient distribution.
 
 Also, tokenization and detokenization is not differentiable, so we cannot use a loss in the coefficients or the original data.
 Do I instead use cross entropy loss over predicted token distribution and correct token?
+-> Yes, that would be the best approach. But we are not following that.
+
 
 Is the mask correct the way I designed it?
+-> No, given tokens (the ones with index smaller than L) can all attend each other, so the mask has all zeros before that index, not just lower triangular.
 
-
+-------------------------------------------------------------
+04.11.25
