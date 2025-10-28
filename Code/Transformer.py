@@ -1,5 +1,6 @@
 import torch.nn.functional
 from torch import nn
+from torch.distributions import MixtureSameFamily
 
 from Code.CoeffDataset import CoeffDataset
 from Code.Functions import *
@@ -56,6 +57,7 @@ class TransformerModel(nn.Module):
         self.unembedding = torch.nn.Linear(D, 5*PI)
         self.L = L
         self.T = T
+        self.PI = PI
 
 
     def forward(self, input):
@@ -65,12 +67,44 @@ class TransformerModel(nn.Module):
         gmm_params = self.unembedding(output) # (B, T, 5*PI)
         return gmm_params
 
+    def create_gmm(self, params):
+        """
+        Creates a Gaussian Mixture Model from given parameters
+        :param params: of shape (B, 5*PI) stacked parameters extracted as:
+        pi = params[:, 0:PI]
+        mu_0 = params[:, PI:2*PI]
+        mu_1 = params[:, 2*PI:3*PI]
+        sigma_0 = params[:, 3*PI:4*PI]
+        sigma_1 = params[:, 4*PI:5*PI]
+        :return: Pytorch Gaussian Mixture Model from given parameters
+        :raises: ValueError if a pi is negative or a sigma is non-positive
+        """
+        PI = self.PI
+        pi = params[:, 0:PI] # (B, PI)
+        if (pi < 0).any():
+            raise ValueError("pi must be non-negative")
+        mu_0 = params[:, PI:2*PI]
+        mu_1 = params[:, 2*PI:3*PI]
+        mu = torch.stack([mu_0, mu_1], dim=2) # (B, PI, 2)
+        sigma_0 = params[:, 3*PI:4*PI]
+        sigma_1 = params[:, 4*PI:5*PI]
+        # TODO: Clamp sigmas? softplus? softmax for pi's?
+        sigma = torch.stack([sigma_0, sigma_1], dim=2) # (B, PI, 2)
+        if (sigma <= 0).any():
+            raise ValueError("sigma must be positive")
+        mix = torch.distributions.Categorical(pi)
+        gaussians = torch.distributions.LowRankMultivariateNormal(mu,torch.tensor(0), sigma) # (B,PI,2)
+        gaussians = torch.distributions.Independent(gaussians, 1)
+        gmm = MixtureSameFamily(mix, gaussians)
+        return gmm
+
 
     def infer(self, input):
         # input.shape # (B, T, 2)
         for index in range(self.L, self.T):
             gmm_params = self.forward(input) # (B, T, 5*PI)
-            sample = sample_gmm(gmm_params[:,index,:]) # (B, 2)
+            gmm = self.create_gmm(gmm_params[:,index, :]) # B 2-dimensional GMMs
+            sample = gmm.sample([1]) # (B, 2)
             input[:,index,:] = sample
         return input
 
