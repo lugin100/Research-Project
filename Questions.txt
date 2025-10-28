@@ -86,3 +86,5 @@ Is the mask correct the way I designed it?
 
 -------------------------------------------------------------
 04.11.25
+
+Do I need positional encoding?
