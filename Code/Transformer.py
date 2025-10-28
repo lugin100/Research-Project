@@ -48,31 +48,30 @@ def create_mask(T: int, L: int):
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, V: int, D: int, H, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, PI: int, **kwargs):
         super().__init__()
-        self.embedding = torch.nn.Embedding(V, D)
-        #self.embedding = nn.Linear(2, D)
+        self.embedding = nn.Linear(2, D)
         self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
         self.mask = create_mask(T, L).to(DEVICE)
-        self.unembedding = torch.nn.Linear(D, V)
+        self.unembedding = torch.nn.Linear(D, 5*PI)
         self.L = L
         self.T = T
 
 
     def forward(self, input):
-        #input.shape # (B, T)
+        #input.shape # (B, T, 2)
         input = self.embedding(input) # (B, T, D)
         output = self.transformer(input, src_mask=self.mask) # (B, T, D)
-        logits = self.unembedding(output) # (B, T, V)
-        return logits
+        gmm_params = self.unembedding(output) # (B, T, 5*PI)
+        return gmm_params
 
 
     def infer(self, input):
-        # input.shape # (B, T)
+        # input.shape # (B, T, 2)
         for index in range(self.L, self.T):
-            pred = self.forward(input) # (B, T, V)
-            indices = torch.argmax(pred[:,index,:], dim=-1)
-            input[:,index] = indices
+            gmm_params = self.forward(input) # (B, T, 5*PI)
+            sample = sample_gmm(gmm_params[:,index,:]) # (B, 2)
+            input[:,index,:] = sample
         return input
 
 N = 121
