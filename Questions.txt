@@ -88,5 +88,8 @@ Is the mask correct the way I designed it?
 04.11.25
 
 Do I need positional encoding?
+-> Probably yes, because knowing the coefficients l,m might be advantageous for training.
 
 Do I need to make a difference between encoder/decoder blocks in transformer? 
+-> No, this is only a design choice of the first Transformer architecture for natural language translation
+
