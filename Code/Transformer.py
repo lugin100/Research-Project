@@ -96,47 +96,47 @@ class TransformerModel(nn.Module):
 
 
     def infer(self, input):
-        # input.shape # (B, T, 2)
+        # input.shape # (B, L, 2)
+        output = torch.zeros((self.B, self.T, 2), device=DEVICE)
+        output[:,:self.L,:] = input
         for index in range(self.L, self.T):
-            gmm_params = self.forward(input) # (B, T, 5*PI)
+            gmm_params = self.forward(output) # (B, T, 5*PI)
             gmm = self.create_gmm(gmm_params[:,index, :]) # B 2-dimensional GMMs
             sample = gmm.sample([1]) # (B, 2)
-            input[:,index,:] = sample
-        return input
+            output[:,index,:] = sample
+        return output
 
 N = 121
 T = int(N*(N+1)/2)
 L = int(60*61/2)
-model = TransformerModel(T=T, L=L, V=500, D=512, H=4).to(DEVICE)
+PI = 8
+eps = 1e-5
+model = TransformerModel(T=T, L=L, D=512, H=4, eps=eps).to(DEVICE)
 
 LEARN_RATE = 5e-3
-B = 10
+B = 1
 EPOCHS = 10
 dataset = CoeffDataset("data/coeffs_wind_speed_level=500_time=slice('1970', '1972').pt")
 dataloader = DataLoader(dataset, batch_size=B, shuffle=True)
 
-loss_fn = torch.nn.MSELoss(reduction="mean")
+test_loss_fn = torch.nn.MSELoss(reduction="mean")
 
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARN_RATE)
 
 testset = CoeffDataset("data/coeffs_wind_speed_level=500_time=slice('1970', '1972').pt")
 test_loader = DataLoader(testset, batch_size=B, shuffle=True)
 
-kmeans_train_data = torch.view_as_real(next(iter(dataloader)))
-kmeans_train_data = flatten_coeffs(kmeans_train_data).reshape((-1,2))
-
+train_loss_fn = lambda gmms, values : - gmms.log_prob(values)
 
 def evaluate():
     model.eval()
     with torch.no_grad():
         test_loss = 0
-        for batch in test_loader:
+        for batch.to(DEVICE) in test_loader:
             coeffs = torch.view_as_real(flatten_coeffs(batch))
-            tokens = tokenizer.tokenize(coeffs)
-            #output = model.infer(tokens)
-            output = tokens # Identity function to try out
-            output = tokenizer.detokenize(output)
-            test_loss += loss_fn(coeffs, torch.tensor(output).to(DEVICE)).item()
+            input = coeffs[:,:L,2]
+            output = model.infer(coeffs)
+            test_loss += test_loss_fn(coeffs, output).item()
         test_loss /= len(test_loader)
         print(test_loss)
 
@@ -145,15 +145,12 @@ def train():
     for epoch in range(EPOCHS):
         model.train()
         print(f"Epoch {epoch+1}\n")
-        for i, batch in enumerate(dataloader):
-            batch = batch.to(DEVICE)
-            input = flatten_coeffs(batch)
-            output = model.forward(input)
-            loss = loss_fn(output, input)
-
+        for batch.to(DEVICE) in dataloader:
+            coeffs = torch.view_as_real(flatten_coeffs(batch))
+            output = model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
+            gmms = model.create_gmm(output)
+            loss = train_loss_fn(gmms, coeffs)
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
         evaluate()
-
-evaluate()
