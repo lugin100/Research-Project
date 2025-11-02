@@ -93,3 +93,6 @@ Do I need positional encoding?
 Do I need to make a difference between encoder/decoder blocks in transformer? 
 -> No, this is only a design choice of the first Transformer architecture for natural language translation
 
+How exactly would I do positional embedding?
+
+How does caching during inference work?
