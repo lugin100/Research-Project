@@ -6,8 +6,6 @@ from Code.CoeffDataset import CoeffDataset
 from Code.Functions import *
 from torch.utils.data import DataLoader
 
-from Code.Tokenizer import ClusteringTokenizer
-
 '''
 class MultiHeadAttention(nn.Module):
     def __init__(self, input_dim: int, embedding_dim: int, n_heads: int, dropout_prob: float = 0.0):
@@ -49,7 +47,7 @@ def create_mask(T: int, L: int):
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, D: int, H: int, PI: int, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, PI: int, eps: float, **kwargs):
         super().__init__()
         self.embedding = nn.Linear(2, D)
         self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
@@ -58,6 +56,7 @@ class TransformerModel(nn.Module):
         self.L = L
         self.T = T
         self.PI = PI
+        self.eps = eps
 
 
     def forward(self, input):
@@ -77,21 +76,18 @@ class TransformerModel(nn.Module):
         sigma_0 = params[:, 3*PI:4*PI]
         sigma_1 = params[:, 4*PI:5*PI]
         :return: Pytorch Gaussian Mixture Model from given parameters
-        :raises: ValueError if a pi is negative or a sigma is non-positive
         """
         PI = self.PI
         pi = params[:, 0:PI] # (B, PI)
-        if (pi < 0).any():
-            raise ValueError("pi must be non-negative")
+        pi = nn.Softmax(dim=-1)(pi) # Normalize, ensure positive
         mu_0 = params[:, PI:2*PI]
         mu_1 = params[:, 2*PI:3*PI]
         mu = torch.stack([mu_0, mu_1], dim=2) # (B, PI, 2)
         sigma_0 = params[:, 3*PI:4*PI]
         sigma_1 = params[:, 4*PI:5*PI]
-        # TODO: Clamp sigmas? softplus? softmax for pi's?
         sigma = torch.stack([sigma_0, sigma_1], dim=2) # (B, PI, 2)
-        if (sigma <= 0).any():
-            raise ValueError("sigma must be positive")
+        sigma = nn.Softplus()(sigma)
+        sigma = nn.Threshold(self.eps, self.eps)(sigma)
         mix = torch.distributions.Categorical(pi)
         gaussians = torch.distributions.LowRankMultivariateNormal(mu,torch.tensor(0), sigma) # (B,PI,2)
         gaussians = torch.distributions.Independent(gaussians, 1)
@@ -128,9 +124,6 @@ test_loader = DataLoader(testset, batch_size=B, shuffle=True)
 
 kmeans_train_data = torch.view_as_real(next(iter(dataloader)))
 kmeans_train_data = flatten_coeffs(kmeans_train_data).reshape((-1,2))
-
-V = 500
-tokenizer = ClusteringTokenizer(train_data=kmeans_train_data, V=V)
 
 
 def evaluate():
