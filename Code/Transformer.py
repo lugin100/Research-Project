@@ -111,7 +111,7 @@ T = int(N*(N+1)/2)
 L = int(60*61/2)
 PI = 8
 eps = 1e-5
-model = TransformerModel(T=T, L=L, D=512, H=4, eps=eps).to(DEVICE)
+model = TransformerModel(T=T, L=L, D=512, H=4, eps=eps, norm_first=True).to(DEVICE)
 
 LEARN_RATE = 5e-3
 B = 1
