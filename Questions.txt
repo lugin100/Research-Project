@@ -94,5 +94,11 @@ Do I need to make a difference between encoder/decoder blocks in transformer?
 -> No, this is only a design choice of the first Transformer architecture for natural language translation
 
 How exactly would I do positional embedding?
+A learned embedding that maps indices of flattened coefficients to a vector in embedding space. Add this to the corresponding coefficient in embedding space. No need to do the embedding lookup for every index, as we would do it for every coefficient exactly one. So we can just define a T by D weight matrix that is added to the embedded coefficients.
 
 How does caching during inference work?
+Not very simple, but implementations exist. See Key-Value-Caching in PyTorch. But this is likely only a small absolute speedup as it ony helps with inference.
+
+How to initialize the parameters? 
+Standard PyTorch initialization is maybe fine, but if not, try initializing linear and embedding layers with normal distriution with mean zero and variance 1/sqrt(# params).
+To do this, write a function that takes a layer as input and initializes it if it is a linear or embedding layer. Apply this to every submodule in the Transofrmer init with torch.nn.apply().
