@@ -11,6 +11,7 @@ gcsfs
 zarr
 xarray[io]
 
+torch --index-url https://download.pytorch.org/whl/cu121
 torch-harmonics
 
 scikit-learn
