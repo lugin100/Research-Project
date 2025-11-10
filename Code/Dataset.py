@@ -79,15 +79,18 @@ class WeatherDataset(Dataset):
 
 class CoeffDataset(Dataset):
 
-    def __init__(self, path):
+    def __init__(self, path, weatherDataset=None):
+
         try:
             self.data = torch.load(path + ".pt")
+
         except:
-            # load weather dataset and calculate coeffs
-            print("Dataset not found, calculating from WeatherDataset")
-            weatherData = WeatherDataset("wind_speed", slice("1970", "1971"))
+            # create coefficients from weather dataset
+            assert weatherDataset is not None ("Could not find dataset at given path and no weatherDataset passed")
             data = sh_transform(weatherData.data.mT)
             data = flatten_coeffs(data)
+
+            torch.save(data, path + ".pt")
 
             # Standardization
             coeff_means = torch.mean(data, axis=-1)
@@ -97,11 +100,12 @@ class CoeffDataset(Dataset):
             data /= coeff_stds[None,:]
             torch.save(coeff_stds, path + "_stds.pt")
 
-            torch.save(data, path + ".pt")
             self.data = data
+
 
     def __len__(self):
         return len(self.data)
+
 
     def __getitem__(self, idx):
         return self.data[idx]
