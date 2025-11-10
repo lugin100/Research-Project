@@ -1,6 +1,8 @@
 import xarray as xr
 import torch
-from Code.Functions import DEVICE
+from torch.utils.data import Dataset
+from Code.Functions import *
+
 
 DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
 
@@ -36,7 +38,8 @@ def load_data(level, time, variable):
     finally:
         return data
 
-class WeatherDataset(torch.utils.data.Dataset):
+
+class WeatherDataset(Dataset):
 
     DATA_PATH = "/mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global1959-2022-6h-240x121_equiangular_with_poles_conservative.zarr"
 
@@ -72,4 +75,34 @@ class WeatherDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         return self.data[idx].mT
+
+
+class CoeffDataset(Dataset):
+
+    def __init__(self, path):
+        try:
+            self.data = torch.load(path + ".pt")
+        except:
+            # load weather dataset and calculate coeffs
+            print("Dataset not found, calculating from WeatherDataset")
+            weatherData = WeatherDataset("wind_speed", slice("1970", "1971"))
+            data = sh_transform(weatherData.data.mT)
+            data = flatten_coeffs(data)
+
+            # Standardization
+            coeff_means = torch.mean(data, axis=-1)
+            data -= coeff_means[None,:]
+            torch.save(coeff_means, path + "_means.pt")
+            coeff_stds = torch.std(data, axis=-1)
+            data /= coeff_stds[None,:]
+            torch.save(coeff_stds, path + "_stds.pt")
+
+            torch.save(data, path + ".pt")
+            self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
 
