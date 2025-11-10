@@ -1,7 +1,7 @@
 import xarray as xr
 import torch
 from torch.utils.data import Dataset
-from Code.Functions import *
+from Functions import *
 
 
 DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
@@ -41,7 +41,7 @@ def load_data(level, time, variable):
 
 class WeatherDataset(Dataset):
 
-    DATA_PATH = "/mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global1959-2022-6h-240x121_equiangular_with_poles_conservative.zarr"
+    DATA_PATH = "/mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global/1959-2022-6h-240x121_equiangular_with_poles_conservative.zarr"
 
     def __init__(self, variable, time_slice, level, path = None, standardize=False):
         path = path if path is not None else self.DATA_PATH
@@ -55,8 +55,11 @@ class WeatherDataset(Dataset):
         data = data.sel(time = time_slice, level=level)
         self.data = data.values
         self.materialize()
-	if standardize:
+        if standardize:
             self.standardize()
+
+    def get(self):
+        return self.data.mT
 
 
     def materialize(self):
@@ -86,8 +89,8 @@ class CoeffDataset(Dataset):
 
         except:
             # create coefficients from weather dataset
-            assert weatherDataset is not None ("Could not find dataset at given path and no weatherDataset passed")
-            data = sh_transform(weatherData.data.mT)
+            assert weatherDataset is not None, "Could not find dataset at given path and no weatherDataset passed"
+            data = sh_transform(weatherDataset.get())
             data = flatten_coeffs(data)
 
             torch.save(data, path + ".pt")
