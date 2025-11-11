@@ -5,41 +5,6 @@ from Functions import *
 from tqdm import tqdm
 
 
-DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
-
-
-
-def download_data(level, time, variable, path=None):
-    """
-    Download ERA5 data at select level, time and variable
-    and save it locally
-    """
-    return DeprecationWarning("Only for local use")
-    path = path if path is not None else DOWNLOAD_PATH
-    
-    data_view = xr.open_zarr(path)
-    selection = data_view.sel(level=level, time=time)[variable]
-    
-    save_file = f"data/{variable}_level={level}_time={time}.nc"
-    selection.to_netcdf(save_file, mode="w")
-
-def load_data(level, time, variable):
-    """
-    Load ERA5 data at select level, time and variable
-    Look up local storage; if not available, download first
-    """
-    return DeprecationWarning("Only for local use")
-    save_file = f"data/{variable}_level={level}_time={time}.nc"
-    try:
-        data = xr.open_dataarray(save_file)
-    except:
-        print("load_data: Falling back to download, might take a while")
-        download_data(level, time, variable)
-        data = xr.open_dataarray(save_file)
-    finally:
-        return data
-
-
 class WeatherDataset(Dataset):
 
     DATA_PATH = "/mnt/lustre/work/ludwig/shared_datasets/weatherbench2/global/1959-2022-6h-240x121_equiangular_with_poles_conservative.zarr"
@@ -93,7 +58,8 @@ class CoeffDataset(Dataset):
             assert weatherDataset is not None, "Could not find dataset at given path and no weatherDataset passed"
             batch_size = 10000
             data = []
-            for batch in tqdm(DataLoader(weatherDataset, batch_size=batch_size, shuffle=False, pin_memory=True)):
+            dataloader = DataLoader(weatherDataset, batch_size=batch_size, shuffle=False, pin_memory=True)
+            for batch in tqdm(dataloader):
                 with torch.no_grad():
                     batch = sh_transform(batch.to(DEVICE, non_blocking=True))
                     batch = flatten_coeffs(batch)
