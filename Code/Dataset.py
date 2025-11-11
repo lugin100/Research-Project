@@ -100,17 +100,18 @@ class CoeffDataset(Dataset):
                 data.append(batch.detach().cpu())
 
             data = torch.cat(data, dim=0)
-            print(f"Saving dataset to {path}")
+            self.data = data
 
             # Standardization
             coeff_means = torch.mean(data, axis=0)
-            data -= coeff_means[None,:]
-            torch.save(coeff_means, path + "_means.pt")
             coeff_stds = torch.std(data, axis=0)
             data /= coeff_stds[None,:]
-            torch.save(coeff_stds, path + "_stds.pt")
+            data -= coeff_means[None,:]
+
+            print(f"Saving dataset to {path}")
             torch.save(data, path + ".pt")
-            self.data = data
+            torch.save(coeff_means, path + "_means.pt")
+            torch.save(coeff_stds, path + "_stds.pt")
 
 
     def __len__(self):
