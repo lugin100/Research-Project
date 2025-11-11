@@ -2,12 +2,11 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 import xarray as xr
 import torch
-import numpy as np
-
 
 plt.rcParams.update({'font.size': 16})
 
 def plot_io(show=True, save_name=None):
+    plt.tight_layout()
     if save_name is not None:
         path = "Figures/" + save_name + ".pdf"
         print(path)
@@ -49,9 +48,12 @@ def plot_coeffs_over_m(data, show=True, save_name=None):
     plot_io(show, save_name)
 
 def plot_coeff_stats(path, show=True, save_name=None):
-    means = torch.load(path + "_means.pt", weights_only=True).abs()
-    stds = torch.load(path + "_stds.pt", weights_only=True).abs()
+    means = torch.load(path + "_means.pt", weights_only=True)
+    stds = torch.load(path + "_stds.pt", weights_only=True)
     i = np.arange(len(means))
-    plt.bar(i, means, yerr=stds, capsize=5)
+    plt.bar(i, means, yerr=stds, capsize=3)
+    plt.yscale("log")
+    plt.xlabel("Flat coefficient index")
+    plt.ylabel("Absolute mean and standard deviation")
     plot_io(show, save_name)
 
