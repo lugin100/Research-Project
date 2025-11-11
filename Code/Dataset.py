@@ -1,7 +1,8 @@
 import xarray as xr
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from Code.Functions import *
+from tqdm import tqdm
 
 
 DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
@@ -87,9 +88,15 @@ class CoeffDataset(Dataset):
         except:
             # create coefficients from weather dataset
             assert weatherDataset is not None ("Could not find dataset at given path and no weatherDataset passed")
-            data = sh_transform(weatherData.data.mT)
-            data = flatten_coeffs(data)
+            batch_size = 100
+            data = []
+            for batch in tqdm(DataLoader(weatherDataset, batch_size=batch_size, shuffle=False)):
+                wih torch.no_grad():
+                    batch = sh_transform(batch.to(DEVICE))
+                    batch = flatten_coeffs(batch)
+                data.append(batch.detach().cpu())
 
+            data = torch.cat(data, dim=0)
             torch.save(data, path + ".pt")
 
             # Standardization
