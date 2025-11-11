@@ -45,3 +45,11 @@ def plot_coeffs_over_m(data, show=True, save_name=None):
     data = data.cpu().numpy()
     plt.plot(data.mean(axis=0))
     plot_io(show, save_name)
+
+def plot_coeff_stats(path, show=True, save_name=None):
+    means = torch.load(path + "_means.pt", weights_only=True)
+    stds = torch.load(path + "_stds.pt", weights_only=True)
+    i = np.arange(len(means))
+    plt.bar(i, means, yerr=stds, capsize=5)
+    plot_io(show, save_name)
+
