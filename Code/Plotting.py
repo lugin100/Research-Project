@@ -52,10 +52,10 @@ def plot_coeff_stats(path, show=True, save_name=None):
     means = torch.load(path + "_means.pt", weights_only=True).abs()
     stds = torch.load(path + "_stds.pt", weights_only=True).abs()
     i = np.arange(len(means))
-    plt.plot(i, means)
-    plt.fill_between(i, means - stds, means + stds, alpha=0.5, linewidth=0)
+    plt.stairs(means, label="Mean", linewidth=0.5)
+    plt.fill_between(i, means - stds, means + stds, alpha=0.5, linewidth=0, label="Standard Deviation")
     plt.yscale("log")
     plt.xlabel("Flat coefficient index")
-    plt.ylabel("Absolute mean and standard deviation")
+    plt.ylabel("Absolute value of coefficient")
     plot_io(show, save_name)
 
