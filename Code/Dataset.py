@@ -60,9 +60,8 @@ class CoeffDataset(Dataset):
             data = []
             dataloader = DataLoader(weatherDataset, batch_size=batch_size, shuffle=False, pin_memory=True)
             for batch in tqdm(dataloader):
-                with torch.no_grad():
-                    batch = sh_transform(batch.to(DEVICE, non_blocking=True))
-                    batch = flatten_coeffs(batch)
+                batch = sh_transform(batch)
+                batch = flatten_coeffs(batch)
                 data.append(batch.detach().cpu())
 
             data = torch.cat(data, dim=0)

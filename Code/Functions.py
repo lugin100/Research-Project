@@ -5,15 +5,22 @@ import torch
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def sh_transform(data):
-    (B, nlat, nlon) = data.shape
-    sht = th.RealSHT(nlat, nlon, grid="equiangular").to(DEVICE)
-    return sht(data.to(DEVICE))
 
-def inv_sh_transfrom(coeffs):
+def sh_transform(data, requires_grad=False):
+    (B, nlat, nlon) = data.shape
+    context = torch.enable_grad() if requires_grad else torch.no_grad()
+    with context:
+        sht = th.RealSHT(nlat, nlon, grid="equiangular").to(DEVICE)
+        return sht(data.to(DEVICE, non_blocking=True))
+
+
+def inv_sh_transfrom(coeffs, requires_grad=False):
     (B, lmax, mmax) = coeffs.shape
-    inv_sht = th.InverseRealSHT(lmax, 2*(mmax-1), grid="equiangular").to(DEVICE)
-    return inv_sht(coeffs.to(DEVICE))
+    context = torch.enable_grad() if requires_grad else torch.no_grad()
+    with context:
+        inv_sht = th.InverseRealSHT(lmax, 2*(mmax-1), grid="equiangular").to(DEVICE)
+        return inv_sht(coeffs.to(DEVICE, non_blocking=True))
+
 
 def flatten_coeffs(coeffs):
     """
@@ -25,6 +32,7 @@ def flatten_coeffs(coeffs):
     M = coeffs.shape[1]
     indices = torch.tril_indices(M, M, offset=0)
     return coeffs[:, indices[0], indices[1]]
+
 
 def unflatten_coeffs(flat_coeffs):
     """
