@@ -1,13 +1,8 @@
 import xarray as xr
 import torch
-<<<<<<< HEAD
 from torch.utils.data import Dataset, DataLoader
-from Code.Functions import *
-from tqdm import tqdm
-=======
-from torch.utils.data import Dataset
 from Functions import *
->>>>>>> 169b7328b367e399d29198d635a25b1d31bf796c
+from tqdm import tqdm
 
 
 DOWNLOAD_PATH = "gs://weatherbench2/datasets/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
@@ -72,7 +67,7 @@ class WeatherDataset(Dataset):
         '''
         Materialize lazy loaded xarray into pytorch tensor on DEVICE
         '''
-        self.data = torch.as_tensor(self.data).to(DEVICE)
+        self.data = torch.as_tensor(self.data)#.to(DEVICE)
 
     def standardize(self):
         self.means = self.data.mean(0, keepdim=True)
@@ -91,30 +86,30 @@ class CoeffDataset(Dataset):
     def __init__(self, path, weatherDataset=None):
 
         try:
-            self.data = torch.load(path + ".pt")
+            self.data = torch.load(path + ".pt", weights_only=True)
 
         except:
             # create coefficients from weather dataset
-            assert weatherDataset is not None ("Could not find dataset at given path and no weatherDataset passed")
-            batch_size = 100
+            assert weatherDataset is not None, "Could not find dataset at given path and no weatherDataset passed"
+            batch_size = 10000
             data = []
-            for batch in tqdm(DataLoader(weatherDataset, batch_size=batch_size, shuffle=False)):
-                wih torch.no_grad():
-                    batch = sh_transform(batch.to(DEVICE))
+            for batch in tqdm(DataLoader(weatherDataset, batch_size=batch_size, shuffle=False, pin_memory=True)):
+                with torch.no_grad():
+                    batch = sh_transform(batch.to(DEVICE, non_blocking=True))
                     batch = flatten_coeffs(batch)
                 data.append(batch.detach().cpu())
 
             data = torch.cat(data, dim=0)
-            torch.save(data, path + ".pt")
+            print(f"Saving dataset to {path}")
 
             # Standardization
-            coeff_means = torch.mean(data, axis=-1)
+            coeff_means = torch.mean(data, axis=0)
             data -= coeff_means[None,:]
             torch.save(coeff_means, path + "_means.pt")
-            coeff_stds = torch.std(data, axis=-1)
+            coeff_stds = torch.std(data, axis=0)
             data /= coeff_stds[None,:]
             torch.save(coeff_stds, path + "_stds.pt")
-
+            torch.save(data, path + ".pt")
             self.data = data
 
 
