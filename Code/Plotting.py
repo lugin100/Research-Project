@@ -57,5 +57,6 @@ def plot_coeff_stats(path, show=True, save_name=None):
     plt.yscale("log")
     plt.xlabel("Flat coefficient index")
     plt.ylabel("Absolute value of coefficient")
+    plt.legend()
     plot_io(show, save_name)
 
