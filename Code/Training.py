@@ -43,10 +43,15 @@ configure_optimizers = lambda self: optimizer
 model.configure_optimizers = MethodType(configure_optimizers, model)
 
 
+############# Logging ###############
+from lightning.pytorch.loggers import WandbLogger
+
+wandb_logger = WandbLogger(project="autoregressive-downcasting", log_model="all")
+
 ############# Execution #############
 from lightning import Trainer
 
 
 EPOCHS = 50
-trainer = Trainer(max_epochs=EPOCHS)
+trainer = Trainer(max_epochs=EPOCHS, logger=wandb_logger, log_every_n_steps=1)
 trainer.fit(model, trainloader, validloader)
