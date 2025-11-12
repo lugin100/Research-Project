@@ -2,11 +2,9 @@ import torch.nn.functional
 from torch import nn
 from torch.distributions import MixtureSameFamily
 
-from Code.CoeffDataset import CoeffDataset
-from Code.Functions import *
-from torch.utils.data import DataLoader
+from Functions import *
 
-import lightning as L
+from lightning import LightningModule
 
 '''
 class MultiHeadAttention(nn.Module):
@@ -114,7 +112,7 @@ class TransformerModel(nn.Module):
         return - gmms.log_prob(values)
 
 
-class LightningModel(L.LightningModule):
+class LightningModel(LightningModule):
 
     def __init__(self, transformer):
         super().__init__()
