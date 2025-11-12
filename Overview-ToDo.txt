@@ -1,26 +1,25 @@
 Overview over ToDos for Research Projects
 
-- Read recommended papers
-- Summarize papers in own words
+- Read recommended papers ✓
+- Summarize papers in own words 
 
-- Generate diagram of workflow/components
+- Generate diagram of workflow/components ✓
 
-- Learn workflow on ML cluster
+- Learn workflow on ML cluster ✓
 
-- Acquire & overview training data
-- Understand transformation of training data in detail
-- Implement & conduct training data transformation
+- Acquire & overview training data ✓
+- Understand transformation of training data in detail ✓
+- Implement & conduct training data transformation ✓
 
-- Understand training objective in detail
-- Set up training scaffolding
+- Understand training objective in detail ✓
+- Set up training scaffolding ✓
 
-- Understand Transformer architecture/ autoregression in detail
+- Understand Transformer architecture/ autoregression in detail ✓
 - Train small architecture and interpret results
 
-
-
-- Xarray Daten laden
-- SHT anwenden
-- PyTorch Dataset
-- Transformer Architekturen anschauen
-- torch lightning anschauen
+- Optimize LR schedule hyperparameters
+- Adapt NLL objective for smoother learning
+- Add support for multiple transformer layers
+- Log GMM params
+- Set up model checkpointing
+- Set up inference from checkpoint 
