@@ -90,9 +90,9 @@ class TransformerModel(nn.Module):
         sigma = nn.Softplus()(sigma)
         sigma = nn.Threshold(self.eps, self.eps)(sigma)
         mix = torch.distributions.Categorical(pi)
-        gaussians = torch.distributions.LowRankMultivariateNormal(mu,torch.zeros((1,1)), sigma) # (B,PI,2)
-        gaussians = torch.distributions.Independent(gaussians, 1)
-        gmm = MixtureSameFamily(mix, gaussians)
+        gaussians = torch.distributions.Normal(mu,sigma) # (B,PI,2)
+        components = torch.distributions.Independent(gaussians, 1)
+        gmm = MixtureSameFamily(mix, components)
         return gmm
 
 
@@ -109,7 +109,7 @@ class TransformerModel(nn.Module):
 
 
     def loss_fn(self, gmms, values):
-        return - gmms.log_prob(values)
+        return - gmms.log_prob(values.reshape((-1,2))).mean()
 
 
 class LightningModel(LightningModule):
