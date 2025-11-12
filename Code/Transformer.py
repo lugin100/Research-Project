@@ -6,6 +6,8 @@ from Code.CoeffDataset import CoeffDataset
 from Code.Functions import *
 from torch.utils.data import DataLoader
 
+import lightning as L
+
 '''
 class MultiHeadAttention(nn.Module):
     def __init__(self, input_dim: int, embedding_dim: int, n_heads: int, dropout_prob: float = 0.0):
@@ -66,6 +68,7 @@ class TransformerModel(nn.Module):
         gmm_params = self.unembedding(output) # (B, T, 5*PI)
         return gmm_params
 
+
     def create_gmm(self, params):
         """
         Creates a Gaussian Mixture Model from given parameters
@@ -106,28 +109,41 @@ class TransformerModel(nn.Module):
             output[:,index,:] = sample
         return output
 
-N = 121
-T = int(N*(N+1)/2)
-L = int(60*61/2)
-PI = 8
-eps = 1e-5
-model = TransformerModel(T=T, L=L, D=512, H=4, eps=eps, norm_first=True).to(DEVICE)
 
-LEARN_RATE = 5e-3
-B = 1
-EPOCHS = 10
-dataset = CoeffDataset("data/coeffs_wind_speed_level=500_time=slice('1970', '1972').pt")
-dataloader = DataLoader(dataset, batch_size=B, shuffle=True)
+    def loss_fn(self, gmms, values):
+        return - gmms.log_prob(values)
 
-test_loss_fn = torch.nn.MSELoss(reduction="mean")
 
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARN_RATE)
+class LightningModel(L.LightningModule):
 
-testset = CoeffDataset("data/coeffs_wind_speed_level=500_time=slice('1970', '1972').pt")
-test_loader = DataLoader(testset, batch_size=B, shuffle=True)
+    def __init__(self, transformer):
+        super().__init__()
+        self.model = transformer
 
-train_loss_fn = lambda gmms, values : - gmms.log_prob(values)
+    def training_step(self, batch, batch_idx):
+        coeffs = torch.view_as_real(batch)
+        output = model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
+        gmms = model.create_gmm(output)
+        loss = model.loss_fn(gmms, coeffs)
+        return loss
 
+    def validation_step(self, batch, batch_idx):
+        coeffs = torch.view_as_real(batch)
+        output = model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
+        gmms = model.create_gmm(output)
+        loss = model.loss_fn(gmms, coeffs)
+        self.log("test_loss", loss)
+
+
+
+
+
+
+#test_loss_fn = torch.nn.MSELoss(reduction="mean")
+
+
+
+"""
 def evaluate():
     model.eval()
     with torch.no_grad():
@@ -154,3 +170,4 @@ def train():
             optimizer.step()
             optimizer.zero_grad()
         evaluate()
+"""
