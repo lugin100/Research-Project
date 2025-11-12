@@ -61,7 +61,9 @@ class TransformerModel(nn.Module):
 
     def forward(self, input):
         #input.shape # (B, T, 2)
+        print(input.shape)
         input = self.embedding(input) # (B, T, D)
+        print(input.shape)
         output = self.transformer(input, src_mask=self.mask) # (B, T, D)
         gmm_params = self.unembedding(output) # (B, T, 5*PI)
         return gmm_params
@@ -120,16 +122,16 @@ class LightningModel(LightningModule):
 
     def training_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
-        output = model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
-        gmms = model.create_gmm(output)
-        loss = model.loss_fn(gmms, coeffs)
+        output = self.model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
+        gmms = self.model.create_gmm(output)
+        loss = self.model.loss_fn(gmms, coeffs)
         return loss
 
     def validation_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
-        output = model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
-        gmms = model.create_gmm(output)
-        loss = model.loss_fn(gmms, coeffs)
+        output = self.model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
+        gmms = self.model.create_gmm(output)
+        loss = self.model.loss_fn(gmms, coeffs)
         self.log("test_loss", loss)
 
 

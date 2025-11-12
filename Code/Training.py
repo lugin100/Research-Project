@@ -1,6 +1,8 @@
 ## Transformer Model Training Configuation ##
 
-
+############ Setup ###############
+import torch
+torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 ############ Model ###############
 
@@ -16,7 +18,7 @@ D = 512  # Embedding dimension
 H = 4  # Number of heads in multi-head attention
 NORM_FIRST = True # Whether to apply layer normfirst or after attention and feedforward
 
-transformer = TransformerModel(T=T, L=L, D=D, H=H, eps=EPS, norm_first=NORM_FIRST)
+transformer = TransformerModel(T=T, L=L, D=D, H=H, PI=PI, eps=EPS, norm_first=NORM_FIRST)
 model = LightningModel(transformer)
 
 
@@ -26,15 +28,18 @@ from torch.utils.data import DataLoader
 
 B = 100  # Training batch size
 ds = CoeffDataset("data/wind-speed_level-500_trainset")
-trainloader = DataLoader(ds, batch_size=B, shuffle=True)
+trainloader = DataLoader(ds, batch_size=B, shuffle=True, num_workers=7)
 
 ds = CoeffDataset("data/wind-speed_level-500_testset")
-validloader = DataLoader(ds, batch_size=B, shuffle=False) # No need to shuffle testset
+validloader = DataLoader(ds, batch_size=B, shuffle=False, num_workers=7) # No need to shuffle testset
 
 ############# Optimizer #############
+from types import MethodType
 LR = 5e-3 # Learning Rate
+
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
-model.configure_optimizers = lambda self: optimizer
+configure_optimizers = lambda self: optimizer
+model.configure_optimizers = MethodType(configure_optimizers, model)
 
 EPOCHS = 10
 
@@ -42,6 +47,7 @@ EPOCHS = 10
 
 
 ############# Execution #############
+from lightning import Trainer
 
-trainer = L.Trainer()
+trainer = Trainer()
 trainer.fit(model, trainloader, validloader)
