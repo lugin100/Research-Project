@@ -100,5 +100,5 @@ How does caching during inference work?
 Not very simple, but implementations exist. See Key-Value-Caching in PyTorch. But this is likely only a small absolute speedup as it ony helps with inference.
 
 How to initialize the parameters? 
-Standard PyTorch initialization is maybe fine, but if not, try initializing linear and embedding layers with normal distriution with mean zero and variance 1/sqrt(# params).
-To do this, write a function that takes a layer as input and initializes it if it is a linear or embedding layer. Apply this to every submodule in the Transofrmer init with torch.nn.apply().
+Standard PyTorch initialization is maybe fine, but if not, try initializing linear and embedding layers with normal distribution with mean zero and variance 1/sqrt(# params).
+To do this, write a function that takes a layer as input and initializes it if it is a linear or embedding layer. Apply this to every submodule in the Transformer init with torch.nn.apply().
