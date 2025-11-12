@@ -50,6 +50,7 @@ class TransformerModel(nn.Module):
     def __init__(self, T: int, L: int, D: int, H: int, PI: int, eps: float, **kwargs):
         super().__init__()
         self.embedding = nn.Linear(2, D)
+        self.positional_encoding = nn.Parameter(torch.zeros(T, D))
         self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
         self.mask = create_mask(T, L).to(DEVICE)
         self.unembedding = torch.nn.Linear(D, 5*PI)
@@ -61,8 +62,8 @@ class TransformerModel(nn.Module):
 
     def forward(self, input):
         #input.shape # (B, T, 2)
-        input = self.embedding(input) # (B, T, D)
-        output = self.transformer(input, src_mask=self.mask) # (B, T, D)
+        embedded = self.embedding(input) + self.positional_encoding.unsqueeze(0) # (B, T, D)
+        output = self.transformer(embedded, src_mask=self.mask) # (B, T, D)
         gmm_params = self.unembedding(output) # (B, T, 5*PI)
         return gmm_params
 
