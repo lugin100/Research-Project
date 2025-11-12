@@ -11,7 +11,7 @@ from Transformer import *
 N = 60 # Maximal coefficient degree in training
 triangular_number = lambda N: int(N*(N+1)/2)
 T = triangular_number(N)   # Number of coefficients given in training
-L = triangular_number(N/2) # Nmber of coefficients given in inference
+L = triangular_number(N/2) # Number of coefficients given in inference
 PI = 8  # Number of predicted mixture components
 EPS = 1e-5 # Clamping constant for variance of predicted distriutions
 D = 512  # Embedding dimension
@@ -27,11 +27,12 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 
 B = 100  # Training batch size
-ds = CoeffDataset("data/wind-speed_level-500_trainset")
-trainloader = DataLoader(ds, batch_size=B, shuffle=True, num_workers=7)
+ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=T)
+trainloader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=True)
 
-ds = CoeffDataset("data/wind-speed_level-500_testset")
-validloader = DataLoader(ds, batch_size=B, shuffle=False, num_workers=7) # No need to shuffle testset
+ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
+validloader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False) # No need to shuffle testset
+
 
 ############# Optimizer #############
 from types import MethodType
@@ -41,13 +42,11 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
 configure_optimizers = lambda self: optimizer
 model.configure_optimizers = MethodType(configure_optimizers, model)
 
-EPOCHS = 10
-
-
-
 
 ############# Execution #############
 from lightning import Trainer
 
-trainer = Trainer()
+
+EPOCHS = 50
+trainer = Trainer(max_epochs=EPOCHS)
 trainer.fit(model, trainloader, validloader)

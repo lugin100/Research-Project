@@ -48,8 +48,8 @@ class WeatherDataset(Dataset):
 
 class CoeffDataset(Dataset):
 
-    def __init__(self, path, weatherDataset=None):
-
+    def __init__(self, path, weatherDataset=None, index_limit=None):
+        self.index_limit = index_limit
         try:
             self.data = torch.load(path + ".pt", weights_only=True)
 
@@ -84,5 +84,8 @@ class CoeffDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        if self.index_limit is None:
+            return self.data[idx]
+        else:
+            return self.data[idx, :self.index_limit]
 
