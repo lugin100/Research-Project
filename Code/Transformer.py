@@ -61,9 +61,7 @@ class TransformerModel(nn.Module):
 
     def forward(self, input):
         #input.shape # (B, T, 2)
-        print(input.shape)
         input = self.embedding(input) # (B, T, D)
-        print(input.shape)
         output = self.transformer(input, src_mask=self.mask) # (B, T, D)
         gmm_params = self.unembedding(output) # (B, T, 5*PI)
         return gmm_params
@@ -92,7 +90,7 @@ class TransformerModel(nn.Module):
         sigma = nn.Softplus()(sigma)
         sigma = nn.Threshold(self.eps, self.eps)(sigma)
         mix = torch.distributions.Categorical(pi)
-        gaussians = torch.distributions.LowRankMultivariateNormal(mu,torch.tensor(0), sigma) # (B,PI,2)
+        gaussians = torch.distributions.LowRankMultivariateNormal(mu,torch.zeros((1,1)), sigma) # (B,PI,2)
         gaussians = torch.distributions.Independent(gaussians, 1)
         gmm = MixtureSameFamily(mix, gaussians)
         return gmm
