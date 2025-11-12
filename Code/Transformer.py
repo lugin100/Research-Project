@@ -130,42 +130,4 @@ class LightningModel(LightningModule):
         output = self.model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
         gmms = self.model.create_gmm(output)
         loss = self.model.loss_fn(gmms, coeffs)
-        self.log("test_loss", loss)
-
-
-
-
-
-
-#test_loss_fn = torch.nn.MSELoss(reduction="mean")
-
-
-
-"""
-def evaluate():
-    model.eval()
-    with torch.no_grad():
-        test_loss = 0
-        for batch.to(DEVICE) in test_loader:
-            coeffs = torch.view_as_real(flatten_coeffs(batch))
-            input = coeffs[:,:L,2]
-            output = model.infer(coeffs)
-            test_loss += test_loss_fn(coeffs, output).item()
-        test_loss /= len(test_loader)
-        print(test_loss)
-
-
-def train():
-    for epoch in range(EPOCHS):
-        model.train()
-        print(f"Epoch {epoch+1}\n")
-        for batch.to(DEVICE) in dataloader:
-            coeffs = torch.view_as_real(flatten_coeffs(batch))
-            output = model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
-            gmms = model.create_gmm(output)
-            loss = train_loss_fn(gmms, coeffs)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-        evaluate()
-"""
+        self.log("NLL Loss", loss)
