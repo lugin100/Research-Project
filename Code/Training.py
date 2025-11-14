@@ -18,6 +18,7 @@ params = {
 	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
 	"H": 4,  			# Number of heads in multi-head attention
+	"R": 2 				# Number of sequential transformer blocks
 	"NORM_FIRST": True  # Whether to apply layer norm first or after attention and feedforward
 }
 

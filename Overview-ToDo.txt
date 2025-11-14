@@ -19,8 +19,8 @@ Overview over ToDos for Research Projects
 
 - Optimize LR schedule hyperparameters
 - Adapt NLL objective for smoother learning
-- Add support for multiple transformer layers
+- Add support for multiple transformer layers ✓
 - Log GMM params
 - Set up model checkpointing
 - Set up inference from checkpoint 
-- Custom Layer initialization
+- Custom Layer initialization ✓
