@@ -1,6 +1,6 @@
 import torch.nn.functional
 from torch import nn
-from torch.distributions import MixtureSameFamily
+from torch.distributions import MixtureSameFamily, Categorical, Normal, Independent
 
 from Code.Functions import *
 
@@ -76,46 +76,63 @@ class TransformerModel(nn.Module):
         #input.shape # (B, T, 2)
         embedded = self.embedding(input) + self.positional_encoding.unsqueeze(0) # (B, T, D)
         output = self.transformer(embedded, src_mask=self.mask) # (B, T, D)
-        gmm_params = self.unembedding(output) # (B, T, 5*PI)
-        return gmm_params
+        output = self.unembedding(output) # (B, T, 5*PI)
+        return output
 
 
-    def create_gmm(self, params):
+    def coerce_parameters(output):
         """
-        Creates a Gaussian Mixture Model from given parameters
-        :param params: of shape (B, 5*PI) stacked parameters extracted as:
-        pi = params[:, 0:PI]
-        mu_0 = params[:, PI:2*PI]
-        mu_1 = params[:, 2*PI:3*PI]
-        sigma_0 = params[:, 3*PI:4*PI]
-        sigma_1 = params[:, 4*PI:5*PI]
-        :return: Pytorch Gaussian Mixture Model from given parameters
+        Coerce model outputs to be parameters of a GMM.
+        Args:
+            output: network outputs with shape (..., 5*PI)
+        Returns:
+            tuple of pis, means and variances:
+            pis: mixture component weights of shape (...,PI), normalized with softmax
+            means: means of gaussians of shape (..., PI, 2)
+            variances: variances of gaussians of shape (..., PI, 2) with softplus applied and clipped to self.eps
         """
         PI = self.PI
-        pi = params[:, 0:PI] # (B, PI)
-        pi = nn.Softmax(dim=-1)(pi) # Normalize, ensure positive
+        pi = params[..., 0:PI]
+        # Normalize, ensure positive
+        pis = nn.Softmax(dim=-1)(pi)
+
         mu_0 = params[:, PI:2*PI]
         mu_1 = params[:, 2*PI:3*PI]
-        mu = torch.stack([mu_0, mu_1], dim=2) # (B, PI, 2)
+        means = torch.stack([mu_0, mu_1], dim=-1)
+
         sigma_0 = params[:, 3*PI:4*PI]
         sigma_1 = params[:, 4*PI:5*PI]
-        sigma = torch.stack([sigma_0, sigma_1], dim=2) # (B, PI, 2)
-        sigma = nn.Softplus()(sigma)
-        sigma = nn.Threshold(self.eps, self.eps)(sigma)
-        mix = torch.distributions.Categorical(pi)
-        gaussians = torch.distributions.Normal(mu,sigma) # (B,PI,2)
-        components = torch.distributions.Independent(gaussians, 1)
-        gmm = MixtureSameFamily(mix, components)
-        return gmm
+        sigmas = torch.stack([sigma_0, sigma_1], dim=-1)
+        sigmas = nn.Softplus()(sigmas)
+        sigmas = nn.Threshold(self.eps, self.eps)(sigmas)
+
+        return pis, means, sigmas
+
+
+    def create_gmms(self, pis, means, variances):
+        """
+        Creates a Gaussian Mixture Model from given parameters.
+        Multiple leading batch dimensions are flattened.
+        """
+        pis = pis.reshape((-1,self.PI))
+        means = means.reshape((-1, self.PI, 2))
+        variances = variances.reshape((-1, self.PI, 2))
+        mix = Categorical(pis)
+        gaussians = Normal(mu,sigma)
+        components = Independent(gaussians, 1)
+        gmms = MixtureSameFamily(mix, components)
+        return gmms
 
 
     def infer(self, input):
         # input.shape # (B, L, 2)
         output = torch.zeros((self.B, self.T, 2), device=DEVICE)
         output[:,:self.L,:] = input
+        # for all indices to be predicted
         for index in range(self.L, self.T):
-            gmm_params = self.forward(output) # (B, T, 5*PI)
-            gmm = self.create_gmm(gmm_params[:,index, :]) # B 2-dimensional GMMs
+            preds = self.forward(output) # (B, T, 5*PI)
+            next_params = sef.coerce_parameters(preds[:,index,:])
+            gmm = self.create_gmms(next_params) # B 2-dimensional GMMs
             sample = gmm.sample([1]) # (B, 2)
             output[:,index,:] = sample
         return output
@@ -133,14 +150,16 @@ class LightningModel(LightningModule):
 
     def training_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
-        output = self.model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
-        gmms = self.model.create_gmm(output)
+        output = self.model.forward(coeffs) # (B,T,5*PI)
+        params = self.model.coerce_parameters(output)
+        gmms = self.model.create_gmm(params)
         loss = self.model.loss_fn(gmms, coeffs)
         return loss
 
     def validation_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
-        output = self.model.forward(coeffs).flatten(0,1) # (B*T,5*PI)
+        output = self.model.forward(coeffs) # (B,T,5*PI)
+        params = self.model.coerce_parameters(output)
         gmms = self.model.create_gmm(output)
         loss = self.model.loss_fn(gmms, coeffs)
         self.log("NLL Loss", loss)
