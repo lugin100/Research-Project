@@ -146,6 +146,49 @@ class TransformerModel(nn.Module):
         return - gmms.log_prob(values.reshape((-1,2))).mean()
 
 
+    def beta_nll_loss(self, pis, means, variances, values):
+        """
+        Compute beta-adjusted negative log likelihood of gaussian mixture models at given values
+        Args:
+            pis: Mixture components of shape (..., PI)
+            means: Means of mixture components of shape (..., PI, 2)
+            variances: Variances of mixture components of shape (..., PI, 2)
+            values: Where to evaluate the mixture components, shape (..., 2)
+        Returns:
+            loss: Loss of values given the mixture model, summed over leading axes
+        Note:
+            Uses self.beta to apply beta correction during training and just normal nll loss during inference
+        # Reshape values for broadcasting: (..., 1, 2)
+    """
+    values = values.unsqueeze(-2) # (..., 1, 2) to broadcast over components
+
+    # Compute log probabilities for each component and dimension
+    log_probs = -0.5 * (((values - means)**2 / variances) + variances.log())     # (..., PI, 2)
+
+
+    # Sum over dimensions: (..., PI)
+    log_probs = log_probs.sum(dim=-1)
+
+    # Apply log-softmax to mixture weights: (..., PI)
+    log_pis = pis.log_softmax(dim=-1)
+
+    # Combine: (..., PI)
+    log_mix = log_pis + log_probs
+
+    # Log-sum-exp for mixture: (...,)
+    log_loss = -torch.logsumexp(log_mix, dim=-1)
+
+    # Apply beta correction if needed
+    if self.training and self.beta > 0:
+        # Detach variances to avoid backprop through beta correction
+        det_variances = variances.detach().prod(dim=-1)
+
+        beta_weight = (det_variances * pis).sum(dim=-1)
+        log_loss = log_loss * beta_weight ** self.beta
+
+    # Average over all remaining axes
+    return log_loss.mean()
+
 class LightningModel(LightningModule):
 
     def __init__(self, transformer):
