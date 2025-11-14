@@ -2,7 +2,7 @@ import torch.nn.functional
 from torch import nn
 from torch.distributions import MixtureSameFamily
 
-from Functions import *
+from Code.Functions import *
 
 from lightning import LightningModule
 
@@ -44,20 +44,32 @@ def create_mask(T: int, L: int):
     return mask
 
 
+def initialize_layer(layer):
+    if isinstance(layer, nn.Linear):
+        nn.init.kaiming_normal_(layer.weight, mode="fan_out")
+        if layer.bias is not None:
+            nn.init.zeros_(layer.bias)
+    else:
+        # Do nothing at the moment, because only linear layers have params
+        return
+
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, D: int, H: int, PI: int, EPS: float, NORM_FIRST: bool, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, NORM_FIRST: bool, **kwargs):
         super().__init__()
         self.embedding = nn.Linear(2, D)
         self.positional_encoding = nn.Parameter(torch.zeros(T, D))
-        self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST, **kwargs)
+        transformer_layer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST, **kwargs)
+        self.transformer = torch.nn.TransformerEncoder(transformer_layer, num_layers=R) # initializes all identically -> reinitialize afterwards
         self.mask = create_mask(T, L).to(DEVICE)
         self.unembedding = torch.nn.Linear(D, 5*PI)
         self.L = L
         self.T = T
         self.PI = PI
         self.eps = EPS
+        # Initialization
+        self.apply(initialize_layer)
 
 
     def forward(self, input):
