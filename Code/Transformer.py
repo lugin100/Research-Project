@@ -2,7 +2,7 @@ import torch.nn.functional
 from torch import nn
 from torch.distributions import MixtureSameFamily, Categorical, Normal, Independent
 
-from Code.Functions import *
+from Functions import *
 
 from lightning import LightningModule
 
@@ -58,9 +58,10 @@ class TransformerModel(nn.Module):
 
     def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, NORM_FIRST: bool, **kwargs):
         super().__init__()
+        del kwargs
         self.embedding = nn.Linear(2, D)
         self.positional_encoding = nn.Parameter(torch.zeros(T, D))
-        transformer_layer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST, **kwargs)
+        transformer_layer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST)
         self.transformer = torch.nn.TransformerEncoder(transformer_layer, num_layers=R) # initializes all identically -> reinitialize afterwards
         self.mask = create_mask(T, L).to(DEVICE)
         self.unembedding = torch.nn.Linear(D, 5*PI)
@@ -75,12 +76,12 @@ class TransformerModel(nn.Module):
     def forward(self, input):
         #input.shape # (B, T, 2)
         embedded = self.embedding(input) + self.positional_encoding.unsqueeze(0) # (B, T, D)
-        output = self.transformer(embedded, src_mask=self.mask) # (B, T, D)
+        output = self.transformer(embedded, mask=self.mask) # (B, T, D)
         output = self.unembedding(output) # (B, T, 5*PI)
         return output
 
 
-    def coerce_parameters(output):
+    def coerce_parameters(self, output):
         """
         Coerce model outputs to be parameters of a GMM.
         Args:
@@ -92,16 +93,16 @@ class TransformerModel(nn.Module):
             variances: variances of gaussians of shape (..., PI, 2) with softplus applied and clipped to self.eps
         """
         PI = self.PI
-        pi = params[..., 0:PI]
+        pi = output[..., 0:PI]
         # Normalize, ensure positive
         pis = nn.Softmax(dim=-1)(pi)
 
-        mu_0 = params[:, PI:2*PI]
-        mu_1 = params[:, 2*PI:3*PI]
+        mu_0 = output[..., PI:2*PI]
+        mu_1 = output[..., 2*PI:3*PI]
         means = torch.stack([mu_0, mu_1], dim=-1)
 
-        sigma_0 = params[:, 3*PI:4*PI]
-        sigma_1 = params[:, 4*PI:5*PI]
+        sigma_0 = output[..., 3*PI:4*PI]
+        sigma_1 = output[..., 4*PI:5*PI]
         sigmas = torch.stack([sigma_0, sigma_1], dim=-1)
         sigmas = nn.Softplus()(sigmas)
         sigmas = nn.Threshold(self.eps, self.eps)(sigmas)
@@ -117,8 +118,11 @@ class TransformerModel(nn.Module):
         pis = pis.reshape((-1,self.PI))
         means = means.reshape((-1, self.PI, 2))
         variances = variances.reshape((-1, self.PI, 2))
+        print(pis.shape)
+        print(means.shape)
+        print(variances.shape)
         mix = Categorical(pis)
-        gaussians = Normal(mu,sigma)
+        gaussians = Normal(means, variances)
         components = Independent(gaussians, 1)
         gmms = MixtureSameFamily(mix, components)
         return gmms
@@ -132,7 +136,7 @@ class TransformerModel(nn.Module):
         for index in range(self.L, self.T):
             preds = self.forward(output) # (B, T, 5*PI)
             next_params = sef.coerce_parameters(preds[:,index,:])
-            gmm = self.create_gmms(next_params) # B 2-dimensional GMMs
+            gmm = self.create_gmms(*next_params) # B 2-dimensional GMMs
             sample = gmm.sample([1]) # (B, 2)
             output[:,index,:] = sample
         return output
@@ -152,7 +156,7 @@ class LightningModel(LightningModule):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
-        gmms = self.model.create_gmm(params)
+        gmms = self.model.create_gmms(*params)
         loss = self.model.loss_fn(gmms, coeffs)
         return loss
 
@@ -160,6 +164,6 @@ class LightningModel(LightningModule):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
-        gmms = self.model.create_gmm(output)
+        gmms = self.model.create_gmms(*params)
         loss = self.model.loss_fn(gmms, coeffs)
         self.log("NLL Loss", loss)

@@ -13,17 +13,17 @@ from Transformer import *
 triangular_number = lambda N: int(N*(N+1)/2)
 
 params = {
-	"N": 60 ,			# Maximal coefficient degree in training
+	"N": 60,			# Maximal coefficient degree in training
 	"PI": 8,  			# Number of predicted mixture components
-	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
+	"EPS": 1e-5, 		        # Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
 	"H": 4,  			# Number of heads in multi-head attention
-	"R": 2 				# Number of sequential transformer blocks
-	"NORM_FIRST": True  # Whether to apply layer norm first or after attention and feedforward
+	"R": 2, 			# Number of sequential transformer blocks
+	"NORM_FIRST": True  		# Whether to apply layer norm first or after attention and feedforward
 }
 
 params["T"] = triangular_number(params["N"]) # Number of coefficients given in training
-params["L"] = triangular_number(params["N"]/2), # Number of coefficients given in inference
+params["L"] = triangular_number(params["N"]/2) # Number of coefficients given in inference
 
 transformer = TransformerModel(**params)
 model = LightningModel(transformer)
@@ -33,7 +33,7 @@ model = LightningModel(transformer)
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 
-params["B"] = 100  # Training and eval batch size
+params["B"] = 10  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
@@ -54,7 +54,7 @@ params.update({
 	"MIN_LR": 1e-7				# Learning rate at last cosine step
 	})
 
-optimizer = torch.optim.AdamW(model.parameters(), lr=params["LR"])
+optimizer = torch.optim.AdamW(model.parameters(), lr=params["BASE_LR"])
 
 total_steps =  params["MAX_EPOCHS"] * len(trainloader)
 warmup_steps = int(params["WARMUP_DURATION"] * total_steps)
@@ -66,14 +66,14 @@ warmup_schedule = LinearLR(
 	end_factor=1,
 	total_iters=warmup_steps)
 cosine_schedule = CosineAnnealingLR(
-	optimzer,
+	optimizer,
 	T_max=cosine_steps,
 	eta_min=params["MIN_LR"]
 	)
 scheduler = SequentialLR(
             optimizer,
             schedulers=[warmup_schedule, cosine_schedule],
-            milestones=[params["warmup_steps"]]
+            milestones=[warmup_steps]
         )
 
 def configure_optimizers(self):
@@ -85,17 +85,17 @@ def configure_optimizers(self):
 		}}
 model.configure_optimizers = MethodType(configure_optimizers, model)
 
-def on_train_epoch_start(self):
+def on_train_step_start(self):
 	cur_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
 	self.log("LR", cur_lr, prog_bar=True, on_step=True, on_epoch=False)
-model.on_train_epoch_start = MethodType(on_train_epoch_start, model)
+model.on_train_step_start = MethodType(on_train_step_start, model)
 
 
 ############# Logging ###############
 from lightning.pytorch.loggers import WandbLogger
 
 wandb_logger = WandbLogger(project="autoregressive-downcasting", name=RUN_NAME, log_model="all")
-wandb_logger.experiments.config.update(params)
+wandb_logger.experiment.config.update(params)
 
 
 ############# Execution #############
