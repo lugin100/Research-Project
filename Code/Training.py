@@ -32,7 +32,7 @@ model = LightningModel(transformer)
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 
-params["B"] = 100  # Training batch size
+params["B"] = 100  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)

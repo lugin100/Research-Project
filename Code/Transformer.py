@@ -47,17 +47,17 @@ def create_mask(T: int, L: int):
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, D: int, H: int, PI: int, eps: float, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, PI: int, EPS: float, NORM_FIRST: bool, **kwargs):
         super().__init__()
         self.embedding = nn.Linear(2, D)
         self.positional_encoding = nn.Parameter(torch.zeros(T, D))
-        self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, **kwargs)
+        self.transformer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST, **kwargs)
         self.mask = create_mask(T, L).to(DEVICE)
         self.unembedding = torch.nn.Linear(D, 5*PI)
         self.L = L
         self.T = T
         self.PI = PI
-        self.eps = eps
+        self.eps = EPS
 
 
     def forward(self, input):
