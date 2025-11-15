@@ -113,7 +113,7 @@ class TransformerModel(nn.Module):
     def create_gmms(self, pis, means, variances):
         """
         Creates a Gaussian Mixture Model from given parameters.
-        Multiple leading batch dimensions are flattened.
+        Multiple leading batch dimensions are flattened to one.
         """
         pis = pis.reshape((-1,self.PI))
         means = means.reshape((-1, self.PI, 2))
@@ -135,16 +135,12 @@ class TransformerModel(nn.Module):
         # for all indices to be predicted
         for index in range(self.L, self.T):
             preds = self.forward(output) # (B, T, 5*PI)
-            next_params = sef.coerce_parameters(preds[:,index,:])
+            next_params = self.coerce_parameters(preds[:,index,:])
             gmm = self.create_gmms(*next_params) # B 2-dimensional GMMs
             sample = gmm.sample([1]) # (B, 2)
             output[:,index,:] = sample
         return output
-
-
-    def loss_fn(self, gmms, values):
-        return - gmms.log_prob(values.reshape((-1,2))).mean()
-
+        
 
     def beta_nll_loss(self, pis, means, variances, targets):
         """
@@ -160,7 +156,6 @@ class TransformerModel(nn.Module):
             Uses self.beta to apply beta correction during training and just normal nll loss during inference
     """
     targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
-
     # Compute nll for each component and dimension
     gaussian_nlls = 0.5 * (((values - means)**2 / variances) + variances.log())     # (..., PI, 2)
 
@@ -178,7 +173,7 @@ class TransformerModel(nn.Module):
     mixture_nll = -torch.logsumexp(log_mix, dim=-1) # (...)
 
     # Average over all remaining axes
-    return log_loss.mean()
+    return mixture_nll.mean()
 
 
 class LightningModel(LightningModule):
@@ -191,14 +186,12 @@ class LightningModel(LightningModule):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
-        gmms = self.model.create_gmms(*params)
-        loss = self.model.loss_fn(gmms, coeffs)
+        loss = self.model.beta_nll_loss(*params, coeffs)
         return loss
 
     def validation_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
-        gmms = self.model.create_gmms(*params)
-        loss = self.model.loss_fn(gmms, coeffs)
+        loss = self.model.beta_nll_loss(*params, coeffs)
         self.log("NLL Loss", loss)

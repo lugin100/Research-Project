@@ -18,7 +18,7 @@ Overview over ToDos for Research Projects
 - Train small architecture and interpret results
 
 - Optimize LR schedule hyperparameters
-- Adapt NLL objective for smoother learning
+- Adapt NLL objective for smoother learning ✓
 - Add support for multiple transformer layers ✓
 - Log GMM params
 - Set up model checkpointing
