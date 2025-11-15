@@ -21,7 +21,7 @@ Overview over ToDos for Research Projects
 - Adapt NLL objective for smoother learning ✓
 - Add support for multiple transformer layers ✓
 - Log GMM params ✓
-- Set up model checkpointing
+- Set up model checkpointing ✓
 - Set up inference from checkpoint 
 - Custom Layer initialization ✓
-- Implement early stopping
+- Implement early stopping ✓
