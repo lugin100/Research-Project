@@ -106,7 +106,7 @@ from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
 params["EARLY_STOPPING_PATIENCE"] = 5
 early_stop = EarlyStopping(
-	monitor="val/NLL_Loss",
+	monitor="val/NLL Loss",
 	mode="min",
 	patience=params["EARLY_STOPPING_PATIENCE"],
 	min_delta=0.0,
@@ -114,7 +114,7 @@ early_stop = EarlyStopping(
 	)
 
 checkpointing = ModelCheckpoint(
-    monitor="val/NLL_Loss",
+    monitor="val/NLL Loss",
     mode="min",
     save_top_k=1,
     filename="best-model",
