@@ -86,10 +86,11 @@ def configure_optimizers(self):
 		}}
 model.configure_optimizers = MethodType(configure_optimizers, model)
 
-def on_train_step_start(self):
+def on_before_optimizer_step(self, optimizer):
 	cur_lr = self.trainer.optimizers[0].param_groups[0]["lr"]
-	self.log("LR", cur_lr, prog_bar=True, on_step=True, on_epoch=False)
-model.on_train_step_start = MethodType(on_train_step_start, model)
+	cur_lr = optimizer.param_groups[0]["lr"]
+	self.log("LR", cur_lr, prog_bar=True, on_step=True, on_epoch=False, logger=True, add_dataloader_idx=False)
+model.on_before_optimizer_step = MethodType(on_before_optimizer_step, model)
 
 
 ############# Logging ###############
