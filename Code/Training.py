@@ -102,6 +102,31 @@ wandb_logger.experiment.config.update(params)
 
 ############# Execution #############
 from lightning import Trainer
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 
-trainer = Trainer(fast_dev_run=False, max_epochs=params["MAX_EPOCHS"], logger=wandb_logger, log_every_n_steps=1)
+params["EARLY_STOPPING_PATIENCE"] = 5
+early_stop = EarlyStopping(
+	monitor="val/NLL_Loss",
+	mode="min",
+	patience=params["EARLY_STOPPING_PATIENCE"],
+	min_delta=0.0,
+	verbose=True
+	)
+
+checkpointing = ModelCheckpoint(
+    monitor="val/NLL_Loss",
+    mode="min",
+    save_top_k=1,
+    filename="best-model",
+	)
+
+trainer = Trainer(
+	fast_dev_run=False, 
+	max_epochs=params["MAX_EPOCHS"], 
+	logger=wandb_logger,
+	log_every_n_steps=1,
+	callbacks=[early_stop, checkpointing]
+	)
+
 trainer.fit(model, trainloader, validloader)
+
