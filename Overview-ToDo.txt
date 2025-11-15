@@ -24,3 +24,4 @@ Overview over ToDos for Research Projects
 - Set up model checkpointing
 - Set up inference from checkpoint 
 - Custom Layer initialization ✓
+- Implement early stopping
