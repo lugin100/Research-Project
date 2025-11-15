@@ -15,11 +15,12 @@ triangular_number = lambda N: int(N*(N+1)/2)
 params = {
 	"N": 60,			# Maximal coefficient degree in training
 	"PI": 8,  			# Number of predicted mixture components
-	"EPS": 1e-5, 		        # Clamping constant for variance of predicted distriutions
+	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
 	"H": 4,  			# Number of heads in multi-head attention
 	"R": 2, 			# Number of sequential transformer blocks
-	"NORM_FIRST": True  		# Whether to apply layer norm first or after attention and feedforward
+	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
+	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
 }
 
 params["T"] = triangular_number(params["N"]) # Number of coefficients given in training

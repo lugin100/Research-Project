@@ -56,7 +56,7 @@ def initialize_layer(layer):
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, NORM_FIRST: bool, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: BETA, NORM_FIRST: bool, **kwargs):
         super().__init__()
         del kwargs
         self.embedding = nn.Linear(2, D)
@@ -68,7 +68,8 @@ class TransformerModel(nn.Module):
         self.L = L
         self.T = T
         self.PI = PI
-        self.eps = EPS
+        self.EPS = EPS
+        self.BETA = BETA
         # Initialization
         self.apply(initialize_layer)
 
@@ -90,7 +91,7 @@ class TransformerModel(nn.Module):
             tuple of pis, means and variances:
             pis: mixture component weights of shape (...,PI), normalized with softmax
             means: means of gaussians of shape (..., PI, 2)
-            variances: variances of gaussians of shape (..., PI, 2) with softplus applied and clipped to self.eps
+            variances: variances of gaussians of shape (..., PI, 2) with softplus applied and clipped to self.EPS
         """
         PI = self.PI
         pi = output[..., 0:PI]
@@ -105,7 +106,7 @@ class TransformerModel(nn.Module):
         sigma_1 = output[..., 4*PI:5*PI]
         sigmas = torch.stack([sigma_0, sigma_1], dim=-1)
         sigmas = nn.Softplus()(sigmas)
-        sigmas = nn.Threshold(self.eps, self.eps)(sigmas)
+        sigmas = nn.Threshold(self.EPS, self.EPS)(sigmas)
 
         return pis, means, sigmas
 
@@ -140,7 +141,7 @@ class TransformerModel(nn.Module):
             sample = gmm.sample([1]) # (B, 2)
             output[:,index,:] = sample
         return output
-        
+
 
     def beta_nll_loss(self, pis, means, variances, targets):
         """
@@ -153,16 +154,16 @@ class TransformerModel(nn.Module):
         Returns:
             loss: Loss of targets given the mixture model, summed over leading axes
         Note:
-            Uses self.beta to apply beta correction during training and just normal nll loss during inference
+            Uses self.BETA to apply beta correction during training and just normal nll loss during inference
     """
     targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
     # Compute nll for each component and dimension
     gaussian_nlls = 0.5 * (((values - means)**2 / variances) + variances.log())     # (..., PI, 2)
 
     # Apply beta correction if needed
-    if self.training and self.beta > 0:
+    if self.training and self.BETA > 0:
         # Detach variances to avoid backprop
-        gaussian_nlls = gaussian_nlls * variances.detach() ** self.beta
+        gaussian_nlls = gaussian_nlls * variances.detach() ** self.BETA
 
     # Independent dimensions -> Sum nlls over dimension
     gaussian_nlls = gaussian_nlls.sum(axis=-1) # (..., PI)
