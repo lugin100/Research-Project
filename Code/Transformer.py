@@ -188,8 +188,9 @@ class LightningModel(LightningModule):
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
         loss = self.model.beta_nll_loss(*params, coeffs)
-        self.log("Beta NLL Loss", loss)
+        self.log("Beta NLL Loss", loss, on_step=True, on_epoch=False, prog_bar=True, logger=True)
         return loss
+
 
     def validation_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
@@ -197,7 +198,18 @@ class LightningModel(LightningModule):
         params = self.model.coerce_parameters(output)
         pis, means, variances = params
         loss = self.model.beta_nll_loss(*params, coeffs)
-        self.log("PI Median", pis.median(-1)[0].mean())
-        self.log("MSE", (means[...,0]**2 + means[...,1]**2).mean())
-        self.log("Variance median", variances.median(-1)[0].median(-1)[0].mean())
-        self.log("NLL Loss", loss)
+        pi_log = pis.median(-1)[0].mean()
+        mse_log = (means[...,0]**2 + means[...,1]**2).mean()
+        variance_log = variances.median(-1)[0].median(-1)[0].mean()
+        return {"pi_log": pi_log, "mse_log": mse_log, "variance_log": variance_log, "loss_log": loss}
+
+
+    def validation_epoch_end(self, outputs):
+        pi_log = torch.stack([x["pi_log"] for x in outputs]).mean()
+        mse_log = torch.stack([x["mse_log"] for x in outputs]).mean()
+        variance_log = torch.stack([x["variaance_log"] for x in outputs]).mean()
+        loss_log = torch.stack([x["loss_log"] for x in outputs]).mean()
+        self.log("PI Median", pi_log, prog_bar=True, logger=True)
+        self.log("MSE", mse_log, prog_bar=True, logger=True)
+        self.log("Variance Median", varince_log, prog_bar=True, logger=True)
+        self.log("NLL Loss", loss_log, prog_bar=True, logger=True)
