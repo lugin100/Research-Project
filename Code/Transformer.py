@@ -182,6 +182,7 @@ class LightningModel(LightningModule):
     def __init__(self, transformer):
         super().__init__()
         self.model = transformer
+        self.logs = []
 
     def training_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
@@ -201,15 +202,16 @@ class LightningModel(LightningModule):
         pi_log = pis.median(-1)[0].mean()
         mse_log = (means[...,0]**2 + means[...,1]**2).mean()
         variance_log = variances.median(-1)[0].median(-1)[0].mean()
-        return {"pi_log": pi_log, "mse_log": mse_log, "variance_log": variance_log, "loss_log": loss}
+        self.logs.append({"pi_log": pi_log, "mse_log": mse_log, "variance_log": variance_log, "loss_log": loss})
 
 
-    def validation_epoch_end(self, outputs):
-        pi_log = torch.stack([x["pi_log"] for x in outputs]).mean()
-        mse_log = torch.stack([x["mse_log"] for x in outputs]).mean()
-        variance_log = torch.stack([x["variaance_log"] for x in outputs]).mean()
-        loss_log = torch.stack([x["loss_log"] for x in outputs]).mean()
-        self.log("PI Median", pi_log, prog_bar=True, logger=True)
-        self.log("MSE", mse_log, prog_bar=True, logger=True)
-        self.log("Variance Median", varince_log, prog_bar=True, logger=True)
-        self.log("NLL Loss", loss_log, prog_bar=True, logger=True)
+    def on_validation_epoch_end(self):
+        pi_log = torch.stack([x["pi_log"] for x in self.logs]).mean()
+        mse_log = torch.stack([x["mse_log"] for x in self.logs]).mean()
+        variance_log = torch.stack([x["variaance_log"] for x in self.logs]).mean()
+        loss_log = torch.stack([x["loss_log"] for x in self.logs]).mean()
+        self.log("PI Median", pi_log, prog_bar=True, logger=True, on_epoch=True)
+        self.log("MSE", mse_log, prog_bar=True, logger=True, on_epoch=True)
+        self.log("Variance Median", varince_log, prog_bar=True, logger=True, on_epoch=True)
+        self.log("NLL Loss", loss_log, prog_bar=True, logger=True, on_epoch=True)
+        self.logs.clear()
