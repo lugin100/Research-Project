@@ -56,7 +56,7 @@ def initialize_layer(layer):
 
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: BETA, NORM_FIRST: bool, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: float, NORM_FIRST: bool, **kwargs):
         super().__init__()
         del kwargs
         self.embedding = nn.Linear(2, D)
@@ -158,7 +158,7 @@ class TransformerModel(nn.Module):
     """
         targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
         # Compute nll for each component and dimension
-        gaussian_nlls = 0.5 * (((values - means)**2 / variances) + variances.log())     # (..., PI, 2)
+        gaussian_nlls = 0.5 * (((targets - means)**2 / variances) + variances.log())     # (..., PI, 2)
 
         # Apply beta correction if needed
         if self.training and self.BETA > 0:
@@ -171,7 +171,7 @@ class TransformerModel(nn.Module):
         components = pis.log() - gaussian_nlls
 
         # Use logsumexp for numerical stability
-        mixture_nll = -torch.logsumexp(log_mix, dim=-1) # (...)
+        mixture_nll = -torch.logsumexp(components, dim=-1) # (...)
 
         # Average over all remaining axes
         return mixture_nll.mean()
@@ -195,9 +195,9 @@ class LightningModel(LightningModule):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
-        pis, means, variances = *params
+        pis, means, variances = params
         loss = self.model.beta_nll_loss(*params, coeffs)
-        self.log("PI Median", pis.median(-1).mean())
+        self.log("PI Median", pis.median(-1)[0].mean())
         self.log("MSE", (means[...,0]**2 + means[...,1]**2).mean())
-        self.log("Variance median", variances.median((-1,-2)).mean())
+        self.log("Variance median", variances.median(-1)[0].median(-1)[0].mean())
         self.log("NLL Loss", loss)
