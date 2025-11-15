@@ -17,11 +17,11 @@ Overview over ToDos for Research Projects
 - Understand Transformer architecture/ autoregression in detail ✓
 - Train small architecture and interpret results
 
-- Optimize LR schedule hyperparameters
 - Adapt NLL objective for smoother learning ✓
 - Add support for multiple transformer layers ✓
 - Log GMM params ✓
 - Set up model checkpointing ✓
-- Set up inference from checkpoint 
 - Custom Layer initialization ✓
 - Implement early stopping ✓
+- Set up inference from checkpoint 
+- Optimize LR schedule hyperparameters

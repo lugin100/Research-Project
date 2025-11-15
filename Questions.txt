@@ -102,3 +102,14 @@ How does caching during inference work?
 How to initialize the parameters? 
 -> Standard PyTorch initialization is maybe fine, but if not, try initializing linear and embedding layers with normal distribution with mean zero and variance 1/sqrt(# params).
 To do this, write a function that takes a layer as input and initializes it if it is a linear or embedding layer. Apply this to every submodule in the Transformer init with torch.nn.apply().
+
+------------------------------
+
+How can I let the model train without having to keep connection to the live session?
+
+Can you have a look over my code? Does everything look good?
+
+I am not so sure about the hyperparameters for the learning rate schedule. Any advise or just trial and error?
+
+Would it be easily possible to run the training on multiple GPUs?
+
