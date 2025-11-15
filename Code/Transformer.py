@@ -188,11 +188,16 @@ class LightningModel(LightningModule):
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
         loss = self.model.beta_nll_loss(*params, coeffs)
+        self.log("Beta NLL Loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
+        pis, means, variances = *params
         loss = self.model.beta_nll_loss(*params, coeffs)
+        self.log("PI Median", pis.median(-1).mean())
+        self.log("MSE", (means[...,0]**2 + means[...,1]**2).mean())
+        self.log("Variance median", variances.median((-1,-2)).mean())
         self.log("NLL Loss", loss)
