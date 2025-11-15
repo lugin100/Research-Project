@@ -48,7 +48,7 @@ from types import MethodType
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
 params.update({
-	"BASE_LR": 5e-3,	 		# Base Learning Rate
+	"BASE_LR": 1e-5,	 		# Base Learning Rate
 	"LR_START_FACTOR": 1e-8,	# LR factor for first warmup step
     "MAX_EPOCHS": 50,    		# Maximal number of training epochs
     "WARMUP_DURATION": 0.1, 	# Fraction of epochs until warmup completion
@@ -102,5 +102,5 @@ wandb_logger.experiment.config.update(params)
 ############# Execution #############
 from lightning import Trainer
 
-trainer = Trainer(max_epochs=params["MAX_EPOCHS"], logger=wandb_logger, log_every_n_steps=1)
+trainer = Trainer(fast_dev_run=False, max_epochs=params["MAX_EPOCHS"], logger=wandb_logger, log_every_n_steps=1)
 trainer.fit(model, trainloader, validloader)
