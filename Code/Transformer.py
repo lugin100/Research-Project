@@ -156,25 +156,25 @@ class TransformerModel(nn.Module):
         Note:
             Uses self.BETA to apply beta correction during training and just normal nll loss during inference
     """
-    targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
-    # Compute nll for each component and dimension
-    gaussian_nlls = 0.5 * (((values - means)**2 / variances) + variances.log())     # (..., PI, 2)
+        targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
+        # Compute nll for each component and dimension
+        gaussian_nlls = 0.5 * (((values - means)**2 / variances) + variances.log())     # (..., PI, 2)
 
-    # Apply beta correction if needed
-    if self.training and self.BETA > 0:
-        # Detach variances to avoid backprop
-        gaussian_nlls = gaussian_nlls * variances.detach() ** self.BETA
+        # Apply beta correction if needed
+        if self.training and self.BETA > 0:
+            # Detach variances to avoid backprop
+            gaussian_nlls = gaussian_nlls * variances.detach() ** self.BETA
 
-    # Independent dimensions -> Sum nlls over dimension
-    gaussian_nlls = gaussian_nlls.sum(axis=-1) # (..., PI)
+        # Independent dimensions -> Sum nlls over dimension
+        gaussian_nlls = gaussian_nlls.sum(axis=-1) # (..., PI)
 
-    components = pis.log() - gaussian_nlls
+        components = pis.log() - gaussian_nlls
 
-    # Use logsumexp for numerical stability
-    mixture_nll = -torch.logsumexp(log_mix, dim=-1) # (...)
+        # Use logsumexp for numerical stability
+        mixture_nll = -torch.logsumexp(log_mix, dim=-1) # (...)
 
-    # Average over all remaining axes
-    return mixture_nll.mean()
+        # Average over all remaining axes
+        return mixture_nll.mean()
 
 
 class LightningModel(LightningModule):
