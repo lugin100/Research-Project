@@ -113,3 +113,12 @@ I am not so sure about the hyperparameters for the learning rate schedule. Any a
 
 Would it be easily possible to run the training on multiple GPUs?
 
+The median of the mixture component factors tends to zero, as kinda expected. Anything to do about it (other than jus reducing the number of components?)
+
+Anything missing from the table of contents for the report? (In terms of structure/sections)
+
+Any typesetting guidelines? Shall I ask Nicole?
+
+Can I use the Tübingen ML Cluster/Uni Tübingen Logos on the report title page?
+
+Is the title good?
