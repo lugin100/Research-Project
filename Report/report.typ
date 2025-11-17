@@ -34,16 +34,14 @@ A research project conducted by #link("mailto:luis.gindorf@student.uni-tuebinege
 align(center)[
 Direct Supervision:\
 Jannik Thümmel\
-CEALS Group\
-Tübingen AI Center
 ],
 align(center)[
 Managing Supervision:\
 Junior Professor Nicole Ludwig\
-CEALS Group\
-Tübingen AI Center
 ])
-
+#align(center)[
+Climate, Energy and Machine Learning Systems Group\
+Tübingen AI Center, Eberhard-Karls-Universität Tübingen]
 #v(2em)
 
 #align(center)[
