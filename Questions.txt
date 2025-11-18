@@ -104,16 +104,24 @@ How to initialize the parameters?
 To do this, write a function that takes a layer as input and initializes it if it is a linear or embedding layer. Apply this to every submodule in the Transformer init with torch.nn.apply().
 
 ------------------------------
+18.11.25
 
 How can I let the model train without having to keep connection to the live session?
+-> See https://portal.mlcloud.uni-tuebingen.de/user-guide/galvani/galvani_slurm/
 
 Can you have a look over my code? Does everything look good?
+It seems fine - the NLL being negative is not a problem!
 
 I am not so sure about the hyperparameters for the learning rate schedule. Any advise or just trial and error?
+-> Stick to tested configuations from papers, e.g. https://arxiv.org/pdf/1706.03762, https://arxiv.org/pdf/2212.09748, https://arxiv.org/abs/2312.02116
 
 Would it be easily possible to run the training on multiple GPUs?
+-> Torch lightning should neatly abstract this. Just allocate more GPUs in Slurm and pass the number to lightning.
 
-The median of the mixture component factors tends to zero, as kinda expected. Anything to do about it (other than jus reducing the number of components?)
+The median of the mixture component factors tends to zero, as kinda expected. Anything to do about it (other than just reducing the number of components?)
+-> Not really. As the model gets more potent (with more parameters), it might be capable of using more than just 1-2 components and the problem is alleviated.
+
+------------------------------
 
 Anything missing from the table of contents for the report? (In terms of structure/sections)
 
