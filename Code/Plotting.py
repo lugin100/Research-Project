@@ -14,6 +14,7 @@ def plot_io(show=True, save_name=None):
         plt.savefig(path, bbox_inches = "tight")
     if show:
         plt.show()
+    plt.close('all') # Clear existing state in plt
 
 def plot_xarray_as_map(data, show=True, save_name=None):
     assert isinstance(data, xr.DataArray)

@@ -37,6 +37,5 @@ model.to(DEVICE)
 
 # Infere and plot prediction
 raw_pred = model.infer(torch.view_as_real(single_datapoint_coeffs))
-
 pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(raw_pred)))
 plot_tensor_as_map(pred.squeeze(), show=False, save_name="Inference-model-output")
