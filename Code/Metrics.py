@@ -1,5 +1,6 @@
 import torch
 
+from Functions import *
 
 
 def mean_squared_error(a, b):
@@ -53,3 +54,54 @@ def pi_median(pis):
 def variance_median(variances):
 	return variances.median(-1)[0].median(-1)[0].mean()
 
+
+
+def generate_metrics():
+	T = int(60*61/2)
+	L = int(30*31/2)
+	B = 10000
+	ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
+	loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
+
+	path = "TODO"
+	model = LightningModel.load_from_checkpoint(path)
+	model.eval()
+	model.freeze()
+	model.to(DEVICE)
+
+	mse_zeros = []
+	mse_noise = []
+	mse_preds = []
+
+	for batch in loader:
+		weather = inv_sh_transform(unflatten_coeffs(batch))
+		model_input = torch.view_as_real(batch[:,:L])
+
+		mse_zeros.append(mean_squared_error(weather, torch.zeros_like(weather)))
+		mse_noise.append(mean_squared_error(weather, torch.randn_like(weather)))
+		raw_pred = model.infer(model_input)
+		pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(raw_pred)))
+		mse_preds.append(mean_squared_error(weather, pred))
+
+	print("MSE between test weather dataset and zeros: ", sum(mse_zeros)/len(mse_zeros))
+	print("MSE between test weather dataset and N(0,1) noise: ", sum(mse_noise)/len(mse_noise))
+	print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds))
+
+	pi_medians = []
+	mean_mse = []
+	variance_medians = []
+
+	for batch in loader:
+		model_input = torch.view_as_real(batch)
+		pred_params = model.coerce_params(model.forward(model_input))
+		pis, means, variances = params
+		pi_medians.append(pi_median(pis))
+		mean_mse.append(mean_squared_error(means, torch.zeros_like(means)))
+		variance_medians.append(variance_median(variances))
+
+	print("Median of mixture components avaraged over all predictions: ", sum(pi_medians)/len(pi_medians))
+	print("Squared deviation of predicted means from 0, averged over all predictions: ", sum(mean_mse)/len(mean_mse))
+	print("Median of variances averaged over all predictions: ", sum(variance_medians)/len(variance_medians))
+
+
+	
