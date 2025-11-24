@@ -14,7 +14,7 @@ def sh_transform(data, requires_grad=False):
         return sht(data.to(DEVICE, non_blocking=True))
 
 
-def inv_sh_transfrom(coeffs, requires_grad=False):
+def inv_sh_transform(coeffs, requires_grad=False):
     (B, lmax, mmax) = coeffs.shape
     context = torch.enable_grad() if requires_grad else torch.no_grad()
     with context:

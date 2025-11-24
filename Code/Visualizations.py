@@ -19,12 +19,12 @@ L = int(60*61/2)
 single_datapoint_coeffs[:,L+1:] = 0
 
 # Plot training model input (coefficients zeroed after L)
-input_datapoint = inv_sh_transfrom(unflatten_coeffs(single_datapoint_coeffs))
+input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
 plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name="Training-model-input")
 
 # Plot inference model input (only coefficients up to L)
 single_datapoint_coeffs = single_datapoint_coeffs[:L]
-input_datapoint = inv_sh_transfrom(unflatten_coeffs(single_datapoint_coeffs))
+input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
 plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name="Inference-model-input")
 
 
@@ -38,5 +38,5 @@ model.to(DEVICE)
 # Infere and plot prediction
 raw_pred = model.infer(torch.view_as_real(single_datapoint_coeffs))
 
-pred = inv_sh_transfrom(unflatten_coeffs(torch.view_as_complex(raw_pred)))
+pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(raw_pred)))
 plot_tensor_as_map(pred.squeeze(), show=False, save_name="Inference-model-output")
