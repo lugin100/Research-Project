@@ -100,8 +100,24 @@ def generate_metrics():
 		variance_medians.append(variance_median(variances))
 
 	print("Median of mixture components avaraged over all predictions: ", sum(pi_medians)/len(pi_medians))
-	print("Squared deviation of predicted means from 0, averged over all predictions: ", sum(mean_mse)/len(mean_mse))
+	print("Squared deviation of predicted means from 0, averaged over all predictions: ", sum(mean_mse)/len(mean_mse))
 	print("Median of variances averaged over all predictions: ", sum(variance_medians)/len(variance_medians))
 
+	nll_true = []
+	nll_zeros = []
+	nll_means = []
+	nll_noise = []
 
-	
+	for batch in loader:
+		model_input = torch.view_as_real(batch)
+		params = model.coerce_params(model.forward(model_input))
+		nll_true.append(nll(*params, model_input))
+		nll_zeros.append(nll(*params, torch.zeros_like(model_input)))
+		nll_means.append(nll(*params, params[1]))
+		nll_noise.append(nll(*params, torch.randn_like(model_input)))
+
+
+	print("NLL of true data with predicted parameters: ", sum(nll_true)/len(nll_true))
+	print("NLL of zeros with predicted parameters: ", sum(nll_zeros)/len(nll_zeros))
+	print("NLL of means with predicted parameters: ", sum(nll_means)/len(nll_means))
+	print("NLL of N(0,1) with predicted parameters: ", sum(nll_noise)/len(nll_noise))
