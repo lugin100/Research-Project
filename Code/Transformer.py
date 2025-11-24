@@ -181,6 +181,11 @@ class LightningModel(LightningModule):
         self.model = transformer
         self.logs = []
 
+
+    def infer(self, input):
+        return self.transformer.infer(input)
+
+
     def training_step(self, batch, batch_idx):
         coeffs = torch.view_as_real(batch)
         output = self.model.forward(coeffs) # (B,T,5*PI)
