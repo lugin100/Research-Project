@@ -45,3 +45,11 @@ def beta_nll(pis, means, variances, targets, beta=0):
 def nll(pis, means, variances, targets):
 	return beta_nll(pis, means, variances, targets)
 
+
+def pi_median(pis):
+	return pis.median(-1)[0].mean()
+
+
+def variance_median(variances):
+	return variances.median(-1)[0].median(-1)[0].mean()
+

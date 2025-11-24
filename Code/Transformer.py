@@ -173,9 +173,9 @@ class LightningModel(LightningModule):
         params = self.model.coerce_parameters(output)
         pis, means, variances = params
         loss = self.model.beta_nll_loss(*params, coeffs)
-        pi_log = pis.median(-1)[0].mean()
-        mse_log = (means[...,0]**2 + means[...,1]**2).mean()
-        variance_log = variances.median(-1)[0].median(-1)[0].mean()
+        pi_log = Metrics.pi_median(pis)
+        mse_log = Metrics.mean_squared_error(means, torch.tensor(0.))
+        variance_log = Metrics.variance_median(variances)
         self.logs.append({"pi_log": pi_log, "mse_log": mse_log, "variance_log": variance_log, "loss_log": loss})
 
 
