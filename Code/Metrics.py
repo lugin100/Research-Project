@@ -65,7 +65,7 @@ def generate_metrics():
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
-		path = "TODO"
+		path = "Research-Project/autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
 		model = LightningModel.load_from_checkpoint(path)
 		model.eval()
 		model.freeze()

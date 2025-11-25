@@ -29,7 +29,7 @@ plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name="Inference-m
 
 
 # Load model checkpoint
-path = "TODO"
+path = "Research-Project/autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
 model = LightningModel.load_from_checkpoint(path)
 model.eval()
 model.freeze()
