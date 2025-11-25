@@ -4,7 +4,8 @@ from Dataset import WeatherDataset
 from Functions import *
 from Transformer import LightningModel
 
-natural_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
+path = "data/wind-speed_level-500_testset"
+natural_ds = WeatherDataset(path, "wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
 
 
 # Plot single datapoint as example

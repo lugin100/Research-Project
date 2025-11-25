@@ -12,36 +12,36 @@ def mean_squared_error(a, b):
 
 def beta_nll(pis, means, variances, targets, beta=0, average=True):
 	"""
-    Compute beta-adjusted negative log likelihood of gaussian mixture models at given values
-    Args:
-        pis: Mixture components of shape (..., PI)
-        means: Means of mixture components of shape (..., PI, 2)
-        variances: Variances of mixture components of shape (..., PI, 2)
-        targets: Where to evaluate the mixture components, shape (..., 2)
-      	beta: Beta hyperparameter. 0 (default) equals no beta-correction, i.e. normal nll loss
-      	average: Whether to average over leading axes
-    Returns:
-        loss: Loss of targets given the mixture model, averaged over leading axes if average=True
-    """
-    targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
-    # Compute nll for each component and dimension
-    gaussian_nlls = 0.5 * (((targets - means)**2 / variances) + variances.log())     # (..., PI, 2)
+	Compute beta-adjusted negative log likelihood of gaussian mixture models at given values
+	Args:
+	pis: Mixture components of shape (..., PI)
+	means: Means of mixture components of shape (..., PI, 2)
+	variances: Variances of mixture components of shape (..., PI, 2)
+	targets: Where to evaluate the mixture components, shape (..., 2)
+	  	beta: Beta hyperparameter. 0 (default) equals no beta-correction, i.e. normal nll loss
+	  	average: Whether to average over leading axes
+	Returns:
+	loss: Loss of targets given the mixture model, averaged over leading axes if average=True
+	"""
+	targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
+	# Compute nll for each component and dimension
+	gaussian_nlls = 0.5 * (((targets - means)**2 / variances) + variances.log())	 # (..., PI, 2)
 
-    # Apply beta correction if needed
-    if beta>0:
-        # Detach variances to avoid backprop
-        gaussian_nlls = gaussian_nlls * variances.detach() ** self.BETA
+	# Apply beta correction if needed
+	if beta>0:
+		# Detach variances to avoid backprop
+		gaussian_nlls = gaussian_nlls * variances.detach() ** self.BETA
 
-    # Independent dimensions -> Sum nlls over dimension
-    gaussian_nlls = gaussian_nlls.sum(axis=-1) # (..., PI)
+	# Independent dimensions -> Sum nlls over dimension
+	gaussian_nlls = gaussian_nlls.sum(axis=-1) # (..., PI)
 
-    components = pis.log() - gaussian_nlls
+	components = pis.log() - gaussian_nlls
 
-    # Use logsumexp for numerical stability
-    mixture_nll = -torch.logsumexp(components, dim=-1) # (...)
+	# Use logsumexp for numerical stability
+	mixture_nll = -torch.logsumexp(components, dim=-1) # (...)
 
-    # Average over all remaining axes
-    return mixture_nll.mean()
+	# Average over all remaining axes
+	return mixture_nll.mean()
 
 
 def nll(pis, means, variances, targets, average=True):
@@ -135,14 +135,13 @@ def generate_metrics():
 			n += B
 			model_input = torch.view_as_real(batch)
 			output = torch.zeros_like(model_input)
-	        output[:,:L,:] = model_input[:,L,:]
-	        # for all indices to be predicted
-	        for index in range(self.L, self.T):
-	            preds = self.forward(output) # (B, T, 5*PI)
-	            params = self.coerce_parameters(preds)
-	            gmm = self.create_gmms(*params[:,index,:]) # B 2-dimensional GMMs
-	            sample = gmm.sample([1]) # (B, 2)
-	            output[:,index,:] = sample
+			output[:,:L,:] = model_input[:,L:]
+			for index in range(self.L, self.T):
+				preds = self.forward(output) # (B, T, 5*PI)
+				params = self.coerce_parameters(preds)
+				gmm = self.create_gmms(*params[:,index,:]) # B 2-dimensional GMMs
+				sample = gmm.sample([1]) # (B, 2)
+				output[:,index,:] = sample
 
 
 			losses = nll(*params, model_input, average=False) # (B,T)
@@ -150,7 +149,7 @@ def generate_metrics():
 
 		plt.figure()
 
-	    plt.plot(nll_true)
-	    plt.ylabel("NLL of true data")
-	    plt.xlabel("Inferred parameter index")
-	    plot_io(show=False, save_name="NLL-for-inferred-params")
+		plt.plot(nll_true)
+		plt.ylabel("NLL of true data")
+		plt.xlabel("Inferred parameter index")
+		plot_io(show=False, save_name="NLL-for-inferred-params")
