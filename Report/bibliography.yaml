@@ -1,7 +1,153 @@
+
+Climate-Change-Effects-1:
+      type: Article
+      title: Climate-change–driven accelerated sea-level rise detected in the altimeter era
+      author: [R. Nerem, B. Beckley, J. Fasullo, B. Hamlington, D. Masters, G. Mitchum]
+      page-range: 2022-2025
+      serial-number:
+            doi: 10.1073/pnas.1717312115
+      parent:
+            type: proceedings
+            title: Proceedings of the National Academy of Sciences of the United States of America
+            date: 2018
+            volume: 115
+
+Climate-Change-Effects-2:
+      type: article
+      title: Understanding the rapid summer warming and changes in temperature extremes since the mid-1990s over Western Europe
+      author: ["B. Dong", "R. Sutton", "L. Shaffrey"]
+      journal: Climate Dynamics
+      date: 2017
+      volume: 48
+      page-range: 1537-1554
+      serial-number:
+            doi: 10.1007/s00382-016-3158-8
+
+Climate-Change-Effects-3:
+      type: chapter
+      title: The Impact of Climate Change on Natural Disasters
+      author: [S. Banholzer, J. Kossin, S. Donner]
+      page-range: 21-49
+      serial-number:
+            doi: 10.1007/978-94-017-8598-3_2
+      parent:
+            title: "Reducing Disaster: Early Warning Systems For Climate Change"
+            date: 2014
+
+
+Climate-Change-Effects-4: 
+      type: chapter
+      title: Changes in climate extremes and their impacts on the natural physical environment Change (IPCC)
+      author: [S.I., N. Nicholls, D. Easterling, C.M. Goodess, S. Kanae, J. Kossin, Y. Luo, J. Marengo, K. McInnes, M. Rahimi, Reichstein, A. Sorteberg, C. Vera, X. Zhang]
+      pages: 109-230
+      parent:
+            type: book
+            title: Managing the Risks of Extreme Events and Disasters to Advance Climate Change Adaptation. A Special Report of Working Groups I and II of the Intergovernmental Panel on Climate
+            date: 2012
+
+Overview-ESMs:
+      type: article
+      title: "Earth system models: an overview"
+      author: Gregory M. Flato
+      page-range: 783-800
+      serial-number:
+            doi: 10.1002/wcc.148
+      parent:
+            type: periodical
+            title: WIREs Climate Change
+            date: 2011
+            volume: 2
+            issue: 6
+
+
+downscaling-geospatial-attention:
+      type: article
+      title: Downscaling Earth System Models with Deep Learning
+      author: ["Sungwon Park", "Karandeep Singh", "Arjun Nellikkattil", "Elke Zeller", "Tung Duong Mai", "Meeyoung Cha"]
+      serial-number:
+            doi: 10.1145/3534678.3539031
+      page-range: 3733–3742
+      parent:
+            type: proceedings
+            title: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining
+            publisher: Association for Computing Machinery
+            address: New York, NY, USA
+            date: 2022
+
+downscaling-diffusion-1:
+      type: article
+      title: Conditional diffusion models for downscaling & bias correction of Earth system model precipitation
+      author: ["Michael Aich", "Philipp Hess", "Baoxiang Pan", "Sebastian Bathiany", "Yu Huang", "Niklas Boers"]
+      date: 2025
+      serial-number:
+            doi: 10.5194/egusphere-2025-2646
+      note: "Preprint"
+
+
+downscaling-diffusion-2:
+      type: article
+      title: Fast, Scale-Adaptive, and Uncertainty-Aware Downscaling of Earth System Model Fields with Generative Machine Learning
+      author: ["Philipp Hess", "Michael Aich", "Baoxiang Pan", "Niklas Boers"]
+      serial-number:
+            doi: 110.1038/s42256-025-00980-5
+      page-range: 363-373
+      parent:
+            type: periodical
+            title: Nature Machine Intelligence
+            publisher: Nature
+            date: 2025
+            volume: 7
+            serial-number:
+                  issn: 2522-5839
+
+downscaling-probabilistic:
+      type: article
+      title: A Generative Framework for Probabilistic, Spatiotemporally Coherent Downscaling of Climate Simulation
+      author: ["Jonathan Schmidt", "Luca Schmidt", "Felix M. Strnad", "Nicole Ludwig", "Philipp Hennig"]
+      serial-number:
+            doi: 10.1038/s41612-025-01157-y
+      parent:
+            type: periodical
+            title: npj Climate and Atmospheric Science 
+            publisher: Nature
+            date: 2025
+            volume: 8
+            serial-number:
+                  issn: 2397-3722
+
+downscaling-GANs:
+      type: article
+      title: A Generative Deep Learning Approach to Stochastic Downscaling of Precipitation Forecasts
+      author: ["Harris, Lucy", "McRae, Andrew T. T.", "Chantry, Matthew", "Dueben, Peter D.", "Palmer, Tim N."]
+      serial-number:
+            doi: 10.1029/2022ms003120
+      parent:
+            type: periodical
+            title: Journal of Advances in Modeling Earth Systems
+            publisher: American Geophysical Union
+            date: 2022
+            volume: 14
+            issn: 1942-2466
+
+downscaling-normalizing-flow:
+      type: article
+      title: "ClimAlign: Unsupervised statistical downscaling of climate variables via normalizing flows"
+      author: ["Brian Groenke", "Luke Madaus", "Claire Monteleoni"]
+      page-range: 60–66
+      serial-number:
+            doi: 10.1145/3429309.3429318
+      parent:
+            type: proceedings
+            title: Proceedings of the 10th International Conference on Climate Informatics
+            publisher: Association for Computing Machinery
+            isbn: 9781450388481
+            date: 2021
+
 Beta-NLL:
       type: proceedings
       title: On the Pitfalls of Heteroscedastic Uncertainty Estimation with Probabilistic Neural Networks
-      author: Maximilian Seitzer and Arash Tavakoli and Dimitrije Antic and Georg Martius
-      year: 2022
-      booktitle: International Conference on Learning Representations
+      author: [Maximilian Seitzer, Arash Tavakoli, Dimitrije Antic, Georg Martius]
+      date: 2022
       url: https://openreview.net/forum?id=aPOpXlnV1T
+      parent: 
+            title: International Conference on Learning Representations
