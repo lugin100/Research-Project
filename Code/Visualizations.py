@@ -4,8 +4,7 @@ from Dataset import WeatherDataset
 from Functions import *
 from Transformer import LightningModel
 
-path = "data/wind-speed_level-500_testset"
-natural_ds = WeatherDataset(path, "wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
+natural_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
 
 
 # Plot single datapoint as example
@@ -30,8 +29,29 @@ plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name="Inference-m
 
 
 # Load model checkpoint
-path = "Research-Project/autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
-model = LightningModel.load_from_checkpoint(path)
+path = "autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
+from Transformer import *
+
+triangular_number = lambda N: int(N*(N+1)/2)
+
+params = {
+	"N": 60,			# Maximal coefficient degree in training
+	"PI": 8,  			# Number of predicted mixture components
+	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
+	"D": 512,  			# Embedding dimension
+	"H": 4,  			# Number of heads in multi-head attention
+	"R": 2, 			# Number of sequential transformer blocks
+	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
+	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
+}
+
+params["T"] = triangular_number(params["N"]) # Number of coefficients given in training
+params["L"] = triangular_number(params["N"]/2) # Number of coefficients given in inference
+
+#checkpoint = torch.load(path)
+transformer = TransformerModel(**params)
+model = LightningModel.load_from_checkpoint(path, transformer=transformer, strict=False)
+print(model)
 model.eval()
 model.freeze()
 model.to(DEVICE)
