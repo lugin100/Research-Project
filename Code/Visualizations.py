@@ -6,6 +6,8 @@ from Transformer import LightningModel
 
 natural_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
 
+# Works for full size model
+L = int(60*61/2)
 
 # Plot single datapoint as example
 single_datapoint = natural_ds.__getitem__(4)
@@ -15,7 +17,6 @@ plot_tensor_as_map(single_datapoint, show=False, save_name="Ground-Truth")
 single_datapoint_coeffs = flatten_coeffs(sh_transform(single_datapoint[None,...]))
 
 # Mask coeffs to be predicted
-L = int(60*61/2)
 single_datapoint_coeffs[:,L+1:] = 0
 
 # Plot training model input (coefficients zeroed after L)
@@ -29,29 +30,12 @@ plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name="Inference-m
 
 
 # Load model checkpoint
+from Transformer import LightningModel
+
 #path = "autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
 path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
-from Transformer import *
 
-triangular_number = lambda N: int(N*(N+1)/2)
-
-params = {
-	"N": 60,			# Maximal coefficient degree in training
-	"PI": 8,  			# Number of predicted mixture components
-	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
-	"D": 512,  			# Embedding dimension
-	"H": 4,  			# Number of heads in multi-head attention
-	"R": 2, 			# Number of sequential transformer blocks
-	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
-	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
-}
-
-params["T"] = triangular_number(params["N"]) # Number of coefficients given in training
-params["L"] = triangular_number(params["N"]/2) # Number of coefficients given in inference
-
-#checkpoint = torch.load(path)
-transformer = TransformerModel(**params)
-model = LightningModel.load_from_checkpoint(path, transformer=transformer, strict=False)
+model = LightningModel.load_from_checkpoint(path)
 print(model)
 model.eval()
 model.freeze()
