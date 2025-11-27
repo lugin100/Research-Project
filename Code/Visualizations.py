@@ -36,12 +36,11 @@ from Transformer import LightningModel
 path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
 
 model = LightningModel.load_from_checkpoint(path)
-print(model)
 model.eval()
 model.freeze()
 model.to(DEVICE)
-
 # Infere and plot prediction
+assert False, "Does not work wih current model because it has smaller input resolution"
 raw_pred = model.infer(torch.view_as_real(single_datapoint_coeffs))
 pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(raw_pred)))
 plot_tensor_as_map(pred.squeeze(), show=False, save_name="Inference-model-output")
