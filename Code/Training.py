@@ -26,8 +26,7 @@ params = {
 params["T"] = triangular_number(params["N"]) # Number of coefficients given in training
 params["L"] = triangular_number(params["N"]/2) # Number of coefficients given in inference
 
-transformer = TransformerModel(**params)
-model = LightningModel(transformer)
+model = LightningModel(**params)
 
 
 ############# Datasets ##############

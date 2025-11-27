@@ -148,14 +148,15 @@ class TransformerModel(nn.Module):
 
 class LightningModel(LightningModule):
 
-    def __init__(self, transformer):
+    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: float, NORM_FIRST: bool, **kwargs):
         super().__init__()
-        self.model = transformer
+        self.save_hyperparameters()
+        self.model = Transformer(T, L, D, H, R, PI, EPS, BETA, NORM_FIRST, kwargs)
         self.logs = []
 
 
     def infer(self, input):
-        return self.transformer.infer(input)
+        return self.model.infer(input)
 
 
     def training_step(self, batch, batch_idx):
