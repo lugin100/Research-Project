@@ -4,6 +4,7 @@
 .vscode
 # pycharm specific things
 .idea
+
 # local data
 data
 Models
@@ -14,6 +15,11 @@ __pycache__
 
 # Main class to quickly test out stuff
 Code/Playground.py
+Playground.py
 
 # Report pdf
 Report/report.pdf
+
+# wandb logs
+wandb
+autoregressive-downcasting
