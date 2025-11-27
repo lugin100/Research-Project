@@ -1,6 +1,8 @@
 import torch
 
 from Functions import *
+from Dataset import *
+from Transformer import LightningModel
 
 
 def mean_squared_error(a, b):
@@ -65,7 +67,8 @@ def generate_metrics():
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
-		path = "Research-Project/autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
+		#path = "Research-Project/autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
+		path = "Research-Project/autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
 		model = LightningModel.load_from_checkpoint(path)
 		model.eval()
 		model.freeze()
@@ -153,3 +156,5 @@ def generate_metrics():
 		plt.ylabel("NLL of true data")
 		plt.xlabel("Inferred parameter index")
 		plot_io(show=False, save_name="NLL-for-inferred-params")
+
+generate_metrics()
