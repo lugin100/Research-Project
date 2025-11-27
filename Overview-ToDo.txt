@@ -23,12 +23,12 @@ Overview over ToDos for Research Projects
 - Custom Layer initialization ✓
 - Implement early stopping ✓
 
-- Set up inference from checkpoint 
-- Visualization of predicted /ground truth data
-- Implement MSE Loss on weather data, correlation on coefficients
+- Set up inference from checkpoint ✓
+- Visualization of predicted /ground truth data ✓
+- Implement MSE Loss on weather data, correlation on coefficients ✓
 - Calculate Metrics on zeros, white noise, ground truth data predictions
 
 - Choose LR schedule, architecture hyperparameters from papers
-- Slurm script for non-interactive training process
+- Slurm script for non-interactive training process ✓
 - Try to train model on full data
 - Implement context length batching in transformer
