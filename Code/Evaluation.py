@@ -7,6 +7,8 @@ from Functions import *
 from Dataset import CoeffDataset
 from Plotting import plot_io
 from Metrics import *
+
+
 with torch.no_grad():
 		T = int(60*61/2)
 		L = int(30*31/2)
@@ -14,7 +16,6 @@ with torch.no_grad():
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
-		#path = "autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
 		path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
 		model = LightningModel.load_from_checkpoint(path)
 		model.eval()
@@ -25,7 +26,10 @@ with torch.no_grad():
 		mse_noise = []
 		mse_preds = []
 
-		for batch in loader:
+		for i, batch in enumerate(loader):
+			print(i)
+			if i > 10:
+				break
 			weather = inv_sh_transform(unflatten_coeffs(batch))
 			model_input = torch.view_as_real(batch[:,:L])
 
@@ -43,7 +47,10 @@ with torch.no_grad():
 		mean_mse = []
 		variance_medians = []
 
-		for batch in loader:
+		for i, batch in enumerate(loader):
+			print(i)
+			if i > 10:
+				break
 			model_input = torch.view_as_real(batch)
 			pred_params = model.coerce_params(model.forward(model_input))
 			pis, means, variances = params
@@ -62,7 +69,10 @@ with torch.no_grad():
 		nll_means = []
 		nll_noise = []
 
-		for batch in loader:
+		for i, batch in enumerate(loader):
+			print(i)
+			if i > 10:
+				break
 			model_input = torch.view_as_real(batch)
 			params = model.coerce_params(model.forward(model_input))
 			nll_true.append(nll(*params, model_input).item())
@@ -80,7 +90,10 @@ with torch.no_grad():
 		nll_true = torch.zeros(T)
 		n = 0
 
-		for batch in loader:
+		for i, batch in enumerate(loader):
+			print(i)
+			if i > 10:
+				break
 			B = batch.shape[0]
 			n += B
 			model_input = torch.view_as_real(batch)
