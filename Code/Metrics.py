@@ -30,7 +30,7 @@ def beta_nll(pis, means, variances, targets, beta=0, average=True):
 	# Apply beta correction if needed
 	if beta>0:
 		# Detach variances to avoid backprop
-		gaussian_nlls = gaussian_nlls * variances.detach() ** self.BETA
+		gaussian_nlls = gaussian_nlls * variances.detach() ** beta
 
 	# Independent dimensions -> Sum nlls over dimension
 	gaussian_nlls = gaussian_nlls.sum(axis=-1) # (..., PI)

@@ -129,7 +129,7 @@ class TransformerModel(nn.Module):
 
     def infer(self, input):
         # input.shape # (B, L, 2)
-        output = torch.zeros((self.B, self.T, 2), device=DEVICE)
+        output = torch.zeros((input.shape[0], self.T, 2), device=DEVICE)
         output[:,:self.L,:] = input
         # for all indices to be predicted
         for index in range(self.L, self.T):
@@ -151,7 +151,7 @@ class LightningModel(LightningModule):
     def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: float, NORM_FIRST: bool, **kwargs):
         super().__init__()
         self.save_hyperparameters()
-        self.model = Transformer(T, L, D, H, R, PI, EPS, BETA, NORM_FIRST, kwargs)
+        self.model = TransformerModel(T, L, D, H, R, PI, EPS, BETA, NORM_FIRST, **kwargs)
         self.logs = []
 
 
@@ -175,7 +175,7 @@ class LightningModel(LightningModule):
         pis, means, variances = params
         loss = self.model.beta_nll_loss(*params, coeffs)
         pi_log = Metrics.pi_median(pis)
-        mse_log = Metrics.mean_squared_error(means, torch.tensor(0.))
+        mse_log = Metrics.mean_squared_error(means, torch.zeros_like(means))
         variance_log = Metrics.variance_median(variances)
         self.logs.append({"pi_log": pi_log, "mse_log": mse_log, "variance_log": variance_log, "loss_log": loss})
 

@@ -1,6 +1,6 @@
 ## Transformer Model Training Configuation ##
 
-RUN_NAME = "Test"
+RUN_NAME = "Test-Checkpointing"
 
 ############ Setup ###############
 import torch

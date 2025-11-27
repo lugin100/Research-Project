@@ -29,7 +29,8 @@ plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name="Inference-m
 
 
 # Load model checkpoint
-path = "autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
+#path = "autoregressive-downcasting/vsn5fk32/checkpoints/best-model.ckpt"
+path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
 from Transformer import *
 
 triangular_number = lambda N: int(N*(N+1)/2)
