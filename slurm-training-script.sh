@@ -8,8 +8,8 @@
 #SBATCH --time=0-12:00             # Allowed runtime in D-HH:MM
 #SBATCH --gres=gpu:1               # (optional) Requesting type and number of GPUs
 #SBATCH --mem=50G                  # Total memory pool for all cores (see also --mem-per-cpu); exceeding this number will cause your job to fail.
-#SBATCH --output=$WORK/myjob-%j.out       # File to which STDOUT will be written - make sure this is not on $HOME
-#SBATCH --error=$WORK/myjob-%j.err        # File to which STDERR will be written - make sure this is not on $HOME
+#SBATCH --output=slurm-output/%j.out       # File to which STDOUT will be written - make sure this is not on $HOME
+#SBATCH --error=slurm-output/%j.err        # File to which STDERR will be written - make sure this is not on $HOME
 #SBATCH --mail-type=ALL            # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=luis.gindorf@student.uni-tuebingen.de   # Email to which notifications will be sent
 
@@ -25,9 +25,9 @@ nvidia-smi # only if you requested gpus
 # - set environment variables
 # - determine commandline arguments for `srun` calls
 
-eval \$(ssh-agent -s)
+eval $(ssh-agent -s)
 ssh-add ~/.ssh/github
-cd \$WORK/Research-Project
+cd $WORK/Research-Project
 git fetch && git pull
 source .venv/bin/activate
 
