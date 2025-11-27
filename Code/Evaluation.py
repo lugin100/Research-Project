@@ -17,7 +17,7 @@ with torch.no_grad():
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
 		path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
-		model = LightningModel.load_from_checkpoint(path)
+		model = LightningModel.load_from_checkpoint(path).model
 		model.eval()
 		model.freeze()
 		model.to(DEVICE)
@@ -26,9 +26,14 @@ with torch.no_grad():
 		mse_noise = []
 		mse_preds = []
 
+		means = torch.load("data/wind-speed_level-500_testset_means.pt")
+		stds = torch.load("data/wind-speed_level-500_testset_stds.pt")
+		print(means.shape)
+		print(stds.shape)
+
 		for i, batch in enumerate(loader):
 			print(i)
-			if i > 10:
+			if i > 1:
 				break
 			weather = inv_sh_transform(unflatten_coeffs(batch))
 			model_input = torch.view_as_real(batch[:,:L])
@@ -36,6 +41,7 @@ with torch.no_grad():
 			mse_zeros.append(mean_squared_error(weather, torch.zeros_like(weather)).item())
 			mse_noise.append(mean_squared_error(weather, torch.randn_like(weather)).item())
 			raw_pred = model.infer(model_input)
+			rescaled_pred = raw_pred * stds[None,...] + means[None,...]
 			pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(raw_pred)))
 			mse_preds.append(mean_squared_error(weather, pred).item())
 
@@ -92,7 +98,7 @@ with torch.no_grad():
 
 		for i, batch in enumerate(loader):
 			print(i)
-			if i > 10:
+			if i > 1:
 				break
 			B = batch.shape[0]
 			n += B
