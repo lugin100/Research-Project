@@ -120,7 +120,7 @@ with torch.no_grad():
 			preds = model.forward(output) # (B, T, 5*PI)
 			params = model.coerce_parameters(preds)
 			losses = nll(*params, torch.view_as_real(batch).to(DEVICE), average=False) # (B,T)
-			nll_true += losses.sum(axis=0).cpu() # (T)
+			nll_true += losses.mean(axis=0).cpu() # (T)
 
 		plt.figure()
 
