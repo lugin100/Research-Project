@@ -26,38 +26,41 @@ with torch.no_grad():
 		path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
 		model = LightningModel.load_from_checkpoint(path).model
 		model.eval()
-		model.freeze()
 		model.to(DEVICE)
 
 		mse_zeros = []
 		mse_noise = []
 		mse_preds = []
+		mse_coeff_noise = []
 
-		means = torch.load("data/wind-speed_level-500_testset_means.pt")
-		stds = torch.load("data/wind-speed_level-500_testset_stds.pt")
-		print(means.shape)
-		print(stds.shape)
+		means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[:T].to(DEVICE)
+		stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[:T].to(DEVICE)
 
 		for i, batch in enumerate(loader):
 			print(i)
 			if i > 1:
 				break
-			rescaled_batch = batch * stds[None,:] + means[None,:]
+			rescaled_batch = batch.to(DEVICE) * stds[None,:] + means[None,:]
 			weather = inv_sh_transform(unflatten_coeffs(rescaled_batch))
 			
 			
-			model_input = torch.view_as_real(batch)
-			raw_pred = torch.view_as_complex(model.infer(model_input))
-			rescaled_pred = raw_pred * stds[None,:] + means[None,:]
-			pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
+#			model_input = torch.view_as_real(batch[:,:L])
+#			raw_pred = torch.view_as_complex(model.infer(model_input))
+#			rescaled_pred = raw_pred * stds[None,:] + means[None,:]
+#			pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
 
+			noise = torch.randn_like(batch).to(DEVICE)
+			scaled_noise = noise * stds[None,:] + means[None,:]
+			weather_noise = inv_sh_transform(unflatten_coeffs(scaled_noise))
 			mse_zeros.append(mean_squared_error(weather, torch.zeros_like(weather)).item())
 			mse_noise.append(mean_squared_error(weather, torch.randn_like(weather)).item())
-			mse_preds.append(mean_squared_error(weather, pred).item())
+			mse_coeff_noise.append(mean_squared_error(weather, weather_noise).item())
+#			mse_preds.append(mean_squared_error(weather, pred).item())
 
 		print("MSE between test weather dataset and zeros: ", sum(mse_zeros)/len(mse_zeros))
 		print("MSE between test weather dataset and N(0,1) noise: ", sum(mse_noise)/len(mse_noise))
-		print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds))
+		print("MSE between test weather dataset and transformed N(0,1) coefficient noise: ", sum(mse_coeff_noise)/len(mse_coeff_noise))
+#		print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds))
 
 		pi_medians = []
 		mean_mse = []
@@ -67,8 +70,8 @@ with torch.no_grad():
 			print(i)
 			if i > 10:
 				break
-			model_input = torch.view_as_real()
-			pred_params = model.coerce_params(model.forward(model_input))
+			model_input = torch.view_as_real(batch).to(DEVICE)
+			pred_params = model.coerce_parameters(model.forward(model_input))
 			pis, means, variances = pred_params
 			pi_medians.append(pi_median(pis).item())
 			mean_mse.append(mean_squared_error(means, torch.zeros_like(means)).item())
@@ -89,10 +92,11 @@ with torch.no_grad():
 			print(i)
 			if i > 10:
 				break
-			model_input = torch.view_as_real(batch)
-			params = model.coerce_params(model.forward(model_input))
+			model_input = torch.view_as_real(batch).to(DEVICE)
+			params = model.coerce_parameters(model.forward(model_input))
+			means = torch.einsum("btp,btpd->btd", params[0], params[1])
 			nll_zeros.append(nll(*params, torch.zeros_like(model_input)).item())
-			nll_means.append(nll(*params, params[1]).item())
+			nll_means.append(nll(*params, means).item())
 			nll_noise.append(nll(*params, torch.randn_like(model_input)).item())
 			nll_true.append(nll(*params, model_input).item())
 
@@ -110,9 +114,8 @@ with torch.no_grad():
 			print(i)
 			if i > 1:
 				break
-			B = batch.shape[0]
 			n += B
-			model_input = torch.view_as_real(batch)
+			model_input = torch.view_as_real(batch).to(DEVICE)
 			output = torch.zeros_like(model_input)
 			output[:,:L,:] = model_input[:,:L,:]
 			
