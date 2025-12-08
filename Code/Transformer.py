@@ -47,7 +47,7 @@ def create_mask(T: int, L: int):
 
 def initialize_layer(layer):
     if isinstance(layer, nn.Linear):
-        nn.init.kaiming_normal_(layer.weight, mode="fan_out")
+        nn.init.xavier_normal_(layer.weight)
         if layer.bias is not None:
             nn.init.zeros_(layer.bias)
     else:
@@ -63,7 +63,7 @@ class TransformerModel(nn.Module):
         self.embedding = nn.Linear(2, D)
         self.positional_encoding = nn.Parameter(torch.zeros(T, D))
         transformer_layer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST)
-        self.transformer = torch.nn.TransformerEncoder(transformer_layer, num_layers=R) # initializes all identically -> reinitialize afterwards
+        self.transformer = torch.nn.TransformerEncoder(transformer_layer, num_layers=R, enable_nested_tensor=False) # initializes all identically -> reinitialize afterwards
         self.mask = create_mask(T, L).to(DEVICE)
         self.unembedding = torch.nn.Linear(D, 5*PI)
         self.L = L
