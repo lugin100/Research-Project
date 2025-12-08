@@ -18,7 +18,7 @@ params = {
 	"PI": 8,  			# Number of predicted mixture components
 	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
-	"H": 4,  			# Number of heads in multi-head attention
+	"H": 8,  			# Number of heads in multi-head attention
 	"R": 4, 			# Number of sequential transformer blocks
 	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
 	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
@@ -34,7 +34,7 @@ model = LightningModel(**params)
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 
-params["B"] = 8  # Training and eval batch size
+params["B"] = 4  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
@@ -48,7 +48,7 @@ from types import MethodType
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
 params.update({
-	"BASE_LR": 1e-5,	 		# Base Learning Rate
+	"BASE_LR": 5e-5,	 		# Base Learning Rate
 	"LR_START_FACTOR": 1e-8,	# LR factor for first warmup step
     "MAX_EPOCHS": 50,    		# Maximal number of training epochs
     "WARMUP_DURATION": 0.15, 	# Fraction of epochs until warmup completion
