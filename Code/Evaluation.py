@@ -16,7 +16,7 @@ from Metrics import (
 	nll)
 
 model_str = "mu4ikkcc"
-DIR = "Results/{model_str}/"
+DIR = f"Results/{model_str}/"
 
 with torch.no_grad():
 		T = int(60*61/2)

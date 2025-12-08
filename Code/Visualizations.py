@@ -11,7 +11,7 @@ from Functions import (
 from Transformer import LightningModel
 
 model_str = "6ybji6ws"
-DIR = "Results/{model_str}/"
+DIR = f"Results/{model_str}/"
 
 natural_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
 
