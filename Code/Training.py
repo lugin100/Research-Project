@@ -1,24 +1,25 @@
 ## Transformer Model Training Configuation ##
 
-RUN_NAME = "SMall-model-training"
-
+#RUN_NAME = "Large-model-training"
+RUN_NAME = "TESTSS"
 ############ Setup ###############
 import torch
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 ############ Model ###############
 
-from Transformer import *
+from Transformer import LightningModel
 
-triangular_number = lambda N: int(N*(N+1)/2)
+def triangular_number(N):
+	return int(N*(N+1)/2)
 
 params = {
-	"N": 60,			# Maximal coefficient degree in training
+	"N": 120,			# Maximal coefficient degree in training
 	"PI": 8,  			# Number of predicted mixture components
 	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
 	"H": 4,  			# Number of heads in multi-head attention
-	"R": 2, 			# Number of sequential transformer blocks
+	"R": 3, 			# Number of sequential transformer blocks
 	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
 	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
 }
@@ -33,7 +34,7 @@ model = LightningModel(**params)
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 
-params["B"] = 128  # Training and eval batch size
+params["B"] = 32  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
