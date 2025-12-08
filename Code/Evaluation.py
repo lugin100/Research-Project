@@ -15,6 +15,7 @@ from Metrics import (
 	variance_median,
 	nll)
 
+model_str = "mu4ikkcc"
 
 with torch.no_grad():
 		T = int(60*61/2)
@@ -23,8 +24,7 @@ with torch.no_grad():
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
-#		path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
-		path = "autoregressive-downcasting/mu4ikkcc/checkpoints/best-model.ckpt"
+		path = f"autoregressive-downcasting/{model_str}/checkpoints/best-model.ckpt"
 		model = LightningModel.load_from_checkpoint(path).model
 		model.eval()
 		model.to(DEVICE)
@@ -43,12 +43,11 @@ with torch.no_grad():
 				break
 			rescaled_batch = batch.to(DEVICE) * stds[None,:] + means[None,:]
 			weather = inv_sh_transform(unflatten_coeffs(rescaled_batch))
-			
-			
-#			model_input = torch.view_as_real(batch[:,:L])
-#			raw_pred = torch.view_as_complex(model.infer(model_input))
-#			rescaled_pred = raw_pred * stds[None,:] + means[None,:]
-#			pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
+
+			model_input = torch.view_as_real(batch[:,:L])
+			raw_pred = torch.view_as_complex(model.infer(model_input))
+			rescaled_pred = raw_pred * stds[None,:] + means[None,:]
+			pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
 
 			noise = torch.randn_like(batch).to(DEVICE)
 			scaled_noise = noise * stds[None,:] + means[None,:]
@@ -56,12 +55,12 @@ with torch.no_grad():
 			mse_zeros.append(mean_squared_error(weather, torch.zeros_like(weather)).item())
 			mse_noise.append(mean_squared_error(weather, torch.randn_like(weather)).item())
 			mse_coeff_noise.append(mean_squared_error(weather, weather_noise).item())
-#			mse_preds.append(mean_squared_error(weather, pred).item())
+			mse_preds.append(mean_squared_error(weather, pred).item())
 
 		print("MSE between test weather dataset and zeros: ", sum(mse_zeros)/len(mse_zeros))
 		print("MSE between test weather dataset and N(0,1) noise: ", sum(mse_noise)/len(mse_noise))
 		print("MSE between test weather dataset and transformed N(0,1) coefficient noise: ", sum(mse_coeff_noise)/len(mse_coeff_noise))
-#		print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds))
+		print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds))
 
 		pi_medians = []
 		mean_mse = []
@@ -125,7 +124,7 @@ with torch.no_grad():
 
 		plt.figure()
 
-		plt.plot(nll_true)
+		plt.plot(nll_true/n)
 		plt.ylabel("NLL of true data")
 		plt.xlabel("Inferred parameter index")
-		plot_io(show=False, save_name="NLL-for-inferred-params")
+		plot_io(show=False, save_name=f"{model_str}/NLL-for-inferred-params")
