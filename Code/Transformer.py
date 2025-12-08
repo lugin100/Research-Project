@@ -164,7 +164,7 @@ class LightningModel(LightningModule):
         output = self.model.forward(coeffs) # (B,T,5*PI)
         params = self.model.coerce_parameters(output)
         loss = self.model.beta_nll_loss(*params, coeffs)
-        self.log("Beta NLL Loss", loss, on_step=True, on_epoch=False, prog_bar=True, logger=True)
+        self.log("Beta NLL Loss", loss, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
         return loss
 
 
@@ -185,8 +185,8 @@ class LightningModel(LightningModule):
         mse_log = torch.stack([x["mse_log"] for x in self.logs]).mean()
         variance_log = torch.stack([x["variance_log"] for x in self.logs]).mean()
         loss_log = torch.stack([x["loss_log"] for x in self.logs]).mean()
-        self.log("val/PI Median", pi_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False)
-        self.log("val/MSE", mse_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False)
-        self.log("val/Variance Median", variance_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False)
-        self.log("val/NLL Loss", loss_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False)
+        self.log("val/PI Median", pi_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
+        self.log("val/MSE", mse_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
+        self.log("val/Variance Median", variance_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
+        self.log("val/NLL Loss", loss_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
         self.logs.clear()
