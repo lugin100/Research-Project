@@ -1,7 +1,7 @@
 ## Transformer Model Training Configuation ##
 
-#RUN_NAME = "Large-model-training"
-RUN_NAME = "TESTSS"
+RUN_NAME = "Large-model"
+
 ############ Setup ###############
 import torch
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
@@ -19,7 +19,7 @@ params = {
 	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
 	"H": 4,  			# Number of heads in multi-head attention
-	"R": 3, 			# Number of sequential transformer blocks
+	"R": 4, 			# Number of sequential transformer blocks
 	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
 	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
 }
@@ -34,7 +34,7 @@ model = LightningModel(**params)
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 
-params["B"] = 32  # Training and eval batch size
+params["B"] = 8  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
@@ -51,7 +51,7 @@ params.update({
 	"BASE_LR": 1e-5,	 		# Base Learning Rate
 	"LR_START_FACTOR": 1e-8,	# LR factor for first warmup step
     "MAX_EPOCHS": 50,    		# Maximal number of training epochs
-    "WARMUP_DURATION": 0.1, 	# Fraction of epochs until warmup completion
+    "WARMUP_DURATION": 0.15, 	# Fraction of epochs until warmup completion
 	"MIN_LR": 1e-7				# Learning rate at last cosine step
 	})
 
