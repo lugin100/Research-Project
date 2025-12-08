@@ -23,7 +23,8 @@ with torch.no_grad():
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
-		path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
+#		path = "autoregressive-downcasting/6ybji6ws/checkpoints/best-model.ckpt"
+		path = "autoregressive-downcasting/mu4ikkcc/checkpoints/best-model.ckpt"
 		model = LightningModel.load_from_checkpoint(path).model
 		model.eval()
 		model.to(DEVICE)
@@ -119,7 +120,7 @@ with torch.no_grad():
 			output = model.infer(model_input)
 			preds = model.forward(output) # (B, T, 5*PI)
 			params = model.coerce_parameters(preds)
-			losses = nll(*params, model_input, average=False) # (B,T)
+			losses = nll(*params, torch.view_as_real(batch).to(DEVICE), average=False) # (B,T)
 			nll_true += losses.sum(axis=0).cpu() # (T)
 
 		plt.figure()
