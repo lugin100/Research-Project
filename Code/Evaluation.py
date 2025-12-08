@@ -16,6 +16,7 @@ from Metrics import (
 	nll)
 
 model_str = "mu4ikkcc"
+DIR = "Results/{model_str}/"
 
 with torch.no_grad():
 		T = int(60*61/2)
@@ -127,4 +128,4 @@ with torch.no_grad():
 		plt.plot(nll_true/n)
 		plt.ylabel("NLL of true data")
 		plt.xlabel("Inferred parameter index")
-		plot_io(show=False, save_name=f"{model_str}/NLL-for-inferred-params")
+		plot_io(show=False, save_name=DIR + "NLL-for-inferred-params")
