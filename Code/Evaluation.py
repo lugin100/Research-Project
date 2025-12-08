@@ -115,18 +115,10 @@ with torch.no_grad():
 			if i > 1:
 				break
 			n += B
-			model_input = torch.view_as_real(batch).to(DEVICE)
-			output = torch.zeros_like(model_input)
-			output[:,:L,:] = model_input[:,:L,:]
-			
-			# Inference loop but saving all the params
-			for index in range(L, T):
-				preds = model.forward(output) # (B, T, 5*PI)
-				params = model.coerce_parameters(preds)
-				gmm = model.create_gmms(*params[:,index,:]) # B 2-dimensional GMMs
-				sample = gmm.sample([1]) # (B, 2)
-				output[:,index,:] = sample
-
+			model_input = torch.view_as_real(batch[:,:L]).to(DEVICE)
+			output = model.infer(model_input)
+			preds = model.forward(output) # (B, T, 5*PI)
+			params = model.coerce_parameters(preds)
 			losses = nll(*params, model_input, average=False) # (B,T)
 			nll_true += losses.sum(axis=0).cpu() # (T)
 
