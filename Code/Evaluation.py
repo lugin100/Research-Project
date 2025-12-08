@@ -14,16 +14,19 @@ from Metrics import (
 	pi_median,
 	variance_median,
 	nll)
+import os
 
 model_str = "mu4ikkcc"
 DIR = f"Results/{model_str}/"
+
+os.makedirs(os.path.dirname(DIR), exist_ok=True)
 LOG = DIR + "Evaluation.txt"
 
 with open(LOG, "w") as file:
 	with torch.no_grad():
 		T = int(60*61/2)
 		L = int(30*31/2)
-		B = 100
+		B = 50
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 

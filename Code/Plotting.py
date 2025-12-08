@@ -9,7 +9,7 @@ plt.rcParams.update({'font.size': 16})
 def plot_io(show=True, save_name=None):
     plt.tight_layout()
     if save_name is not None:
-        path = "Figures/" + save_name + ".pdf"
+        path = save_name + ".pdf"
         print(path)
         plt.savefig(path, bbox_inches = "tight")
     if show:
