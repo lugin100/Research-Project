@@ -123,6 +123,12 @@ The median of the mixture component factors tends to zero, as kinda expected. An
 
 ------------------------------
 
+
+
+How does the batched sequence length work during inference? 
+
+Are there any existing models I should compare mine to?
+
 Anything missing from the table of contents for the report? (In terms of structure/sections)
 
 Any typesetting guidelines? Shall I ask Nicole?
