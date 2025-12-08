@@ -17,8 +17,10 @@ from Metrics import (
 
 model_str = "mu4ikkcc"
 DIR = f"Results/{model_str}/"
+LOG = DIR + "Evaluation.txt"
 
-with torch.no_grad():
+with open(LOG, "w") as file:
+	with torch.no_grad():
 		T = int(60*61/2)
 		L = int(30*31/2)
 		B = 100
@@ -40,7 +42,7 @@ with torch.no_grad():
 
 		for i, batch in enumerate(loader):
 			print(i)
-			if i > 1:
+			if i > 0:
 				break
 			rescaled_batch = batch.to(DEVICE) * stds[None,:] + means[None,:]
 			weather = inv_sh_transform(unflatten_coeffs(rescaled_batch))
@@ -58,11 +60,11 @@ with torch.no_grad():
 			mse_coeff_noise.append(mean_squared_error(weather, weather_noise).item())
 			mse_preds.append(mean_squared_error(weather, pred).item())
 
-		print("MSE between test weather dataset and zeros: ", sum(mse_zeros)/len(mse_zeros))
-		print("MSE between test weather dataset and N(0,1) noise: ", sum(mse_noise)/len(mse_noise))
-		print("MSE between test weather dataset and transformed N(0,1) coefficient noise: ", sum(mse_coeff_noise)/len(mse_coeff_noise))
-		print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds))
-
+		print("MSE between test weather dataset and zeros: ", sum(mse_zeros)/len(mse_zeros), file=file)
+		print("MSE between test weather dataset and N(0,1) noise: ", sum(mse_noise)/len(mse_noise), file=file)
+		print("MSE between test weather dataset and transformed N(0,1) coefficient noise: ", sum(mse_coeff_noise)/len(mse_coeff_noise), file=file)
+		print("MSE between test weather dataset and predictions: ", sum(mse_preds)/len(mse_preds), file=file)
+		print("------------------------------------------------------------", file=file)
 		pi_medians = []
 		mean_mse = []
 		variance_medians = []
@@ -78,10 +80,10 @@ with torch.no_grad():
 			mean_mse.append(mean_squared_error(means, torch.zeros_like(means)).item())
 			variance_medians.append(variance_median(variances).item())
 
-		print("Median of mixture components avaraged over all predictions: ", sum(pi_medians)/len(pi_medians))
-		print("Squared deviation of predicted means from 0, averaged over all predictions: ", sum(mean_mse)/len(mean_mse))
-		print("Median of variances averaged over all predictions: ", sum(variance_medians)/len(variance_medians))
-
+		print("Median of mixture components avaraged over all predictions: ", sum(pi_medians)/len(pi_medians), file=file)
+		print("Squared deviation of predicted means from 0, averaged over all predictions: ", sum(mean_mse)/len(mean_mse), file=file)
+		print("Median of variances averaged over all predictions: ", sum(variance_medians)/len(variance_medians), file=file)
+		print("------------------------------------------------------------", file=file)
 
 		# NLL with predicted parameters
 		nll_zeros = []
@@ -101,11 +103,10 @@ with torch.no_grad():
 			nll_noise.append(nll(*params, torch.randn_like(model_input)).item())
 			nll_true.append(nll(*params, model_input).item())
 
-
-		print("NLL of zeros with predicted parameters: ", sum(nll_zeros)/len(nll_zeros))
-		print("NLL of means with predicted parameters: ", sum(nll_means)/len(nll_means))
-		print("NLL of N(0,1) with predicted parameters: ", sum(nll_noise)/len(nll_noise))
-		print("NLL of true data with predicted parameters: ", sum(nll_true)/len(nll_true))
+		print("NLL of zeros with predicted parameters: ", sum(nll_zeros)/len(nll_zeros), file=file)
+		print("NLL of means with predicted parameters: ", sum(nll_means)/len(nll_means), file=file)
+		print("NLL of N(0,1) with predicted parameters: ", sum(nll_noise)/len(nll_noise), file=file)
+		print("NLL of true data with predicted parameters: ", sum(nll_true)/len(nll_true), file=file)
 
 		# NLL with inferred parameters
 		nll_true = torch.zeros(T)
