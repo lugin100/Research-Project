@@ -1,7 +1,7 @@
 ## Transformer Model Training Configuation ##
 
-#RUN_NAME = "Large-model-training"
-RUN_NAME = "TESTSS"
+RUN_NAME = "Large-model"
+
 ############ Setup ###############
 import torch
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
