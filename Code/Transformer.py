@@ -2,7 +2,7 @@ import torch.nn.functional
 from torch import nn
 from torch.distributions import MixtureSameFamily, Categorical, Normal, Independent
 
-from Functions import *
+from Functions import DEVICE
 import Metrics
 
 from lightning import LightningModule
