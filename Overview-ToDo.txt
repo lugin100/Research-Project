@@ -26,7 +26,7 @@ Overview over ToDos for Research Projects
 - Set up inference from checkpoint ✓
 - Visualization of predicted /ground truth data ✓
 - Implement MSE Loss on weather data, correlation on coefficients ✓
-- Calculate Metrics on zeros, white noise, ground truth data predictions
+- Calculate Metrics on zeros, white noise, ground truth data predictions ✓
 
 - Choose LR schedule, architecture hyperparameters from papers
 - Slurm script for non-interactive training process ✓
