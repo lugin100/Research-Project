@@ -3,10 +3,17 @@ from torch.utils.data import DataLoader
 
 from Transformer import LightningModel
 from matplotlib import pyplot as plt
-from Functions import *
+from Functions import (
+	DEVICE,
+	inv_sh_transform,
+	unflatten_coeffs)
 from Dataset import CoeffDataset
 from Plotting import plot_io
-from Metrics import *
+from Metrics import (
+	mean_squared_error,
+	pi_median,
+	variance_median,
+	nll)
 
 
 with torch.no_grad():
@@ -35,14 +42,17 @@ with torch.no_grad():
 			print(i)
 			if i > 1:
 				break
-			weather = inv_sh_transform(unflatten_coeffs(batch))
-			model_input = torch.view_as_real(batch[:,:L])
+			rescaled_batch = batch * stds[None,:] + means[None,:]
+			weather = inv_sh_transform(unflatten_coeffs(rescaled_batch))
+			
+			
+			model_input = torch.view_as_real(batch)
+			raw_pred = torch.view_as_complex(model.infer(model_input))
+			rescaled_pred = raw_pred * stds[None,:] + means[None,:]
+			pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
 
 			mse_zeros.append(mean_squared_error(weather, torch.zeros_like(weather)).item())
 			mse_noise.append(mean_squared_error(weather, torch.randn_like(weather)).item())
-			raw_pred = model.infer(model_input)
-			rescaled_pred = raw_pred * stds[None,...] + means[None,...]
-			pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(raw_pred)))
 			mse_preds.append(mean_squared_error(weather, pred).item())
 
 		print("MSE between test weather dataset and zeros: ", sum(mse_zeros)/len(mse_zeros))
@@ -57,9 +67,9 @@ with torch.no_grad():
 			print(i)
 			if i > 10:
 				break
-			model_input = torch.view_as_real(batch)
+			model_input = torch.view_as_real()
 			pred_params = model.coerce_params(model.forward(model_input))
-			pis, means, variances = params
+			pis, means, variances = pred_params
 			pi_medians.append(pi_median(pis).item())
 			mean_mse.append(mean_squared_error(means, torch.zeros_like(means)).item())
 			variance_medians.append(variance_median(variances).item())
@@ -70,10 +80,10 @@ with torch.no_grad():
 
 
 		# NLL with predicted parameters
-		nll_true = []
 		nll_zeros = []
 		nll_means = []
 		nll_noise = []
+		nll_true = []
 
 		for i, batch in enumerate(loader):
 			print(i)
@@ -81,16 +91,16 @@ with torch.no_grad():
 				break
 			model_input = torch.view_as_real(batch)
 			params = model.coerce_params(model.forward(model_input))
-			nll_true.append(nll(*params, model_input).item())
 			nll_zeros.append(nll(*params, torch.zeros_like(model_input)).item())
 			nll_means.append(nll(*params, params[1]).item())
 			nll_noise.append(nll(*params, torch.randn_like(model_input)).item())
+			nll_true.append(nll(*params, model_input).item())
 
 
-		print("NLL of true data with predicted parameters: ", sum(nll_true)/len(nll_true))
 		print("NLL of zeros with predicted parameters: ", sum(nll_zeros)/len(nll_zeros))
 		print("NLL of means with predicted parameters: ", sum(nll_means)/len(nll_means))
 		print("NLL of N(0,1) with predicted parameters: ", sum(nll_noise)/len(nll_noise))
+		print("NLL of true data with predicted parameters: ", sum(nll_true)/len(nll_true))
 
 		# NLL with inferred parameters
 		nll_true = torch.zeros(T)
@@ -104,14 +114,15 @@ with torch.no_grad():
 			n += B
 			model_input = torch.view_as_real(batch)
 			output = torch.zeros_like(model_input)
-			output[:,:L,:] = model_input[:,L:]
-			for index in range(self.L, self.T):
-				preds = self.forward(output) # (B, T, 5*PI)
-				params = self.coerce_parameters(preds)
-				gmm = self.create_gmms(*params[:,index,:]) # B 2-dimensional GMMs
+			output[:,:L,:] = model_input[:,:L,:]
+			
+			# Inference loop but saving all the params
+			for index in range(L, T):
+				preds = model.forward(output) # (B, T, 5*PI)
+				params = model.coerce_parameters(preds)
+				gmm = model.create_gmms(*params[:,index,:]) # B 2-dimensional GMMs
 				sample = gmm.sample([1]) # (B, 2)
 				output[:,index,:] = sample
-
 
 			losses = nll(*params, model_input, average=False) # (B,T)
 			nll_true += losses.sum(axis=0).cpu() # (T)
