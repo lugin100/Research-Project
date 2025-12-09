@@ -53,6 +53,6 @@ model_input  = (single_datapoint_coeffs - means[:L]) / stds[:L]
 raw_pred = model.infer(torch.view_as_real(model_input))
 print(raw_pred.shape)
 T = 60*121
-rescaled_pred = torch.view_as_complex(raw_pred.squeeze()) * stds[:,:T] + means[:,:T]
-pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
+rescaled_pred = torch.view_as_complex(raw_pred.squeeze()) * stds[:T] + means[:T]
+pred = inv_sh_transform(unflatten_coeffs(rescaled_pred[None,:]))
 plot_tensor_as_map(pred.squeeze(), show=False, save_name=DIR + "Inference-model-output")
