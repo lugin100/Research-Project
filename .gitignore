@@ -24,3 +24,4 @@ Report/report.pdf
 wandb
 autoregressive-downcasting
 slurm-output
+lightning_logs
