@@ -1,7 +1,7 @@
 import torch
 from types import MethodType
 from Transformer import LightningModel
-from pytorch_lightning import Trainer
+from lightning import Trainer
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Functions import (
@@ -9,13 +9,15 @@ from Functions import (
 	unflatten_coeffs,
 	inv_sh_transform)
 
+torch.set_float32_matmul_precision("medium") # Faster on tensor cores
+
 model_str = "mitogrw5"
 DIR = f"Results/{model_str}/Predictions"
 
 # Load dataset
 data_path = "data/wind-speed_level-500_testset"
 testset = CoeffDataset(data_path)
-B = 10
+B = 4
 dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 # Load model checkpoint
@@ -27,8 +29,10 @@ trainer = Trainer(
     devices="auto",  # Uses all available GPUs
     strategy="ddp",  # Distributed Data Parallel
 )
+L = 30*61
 
-def predict_step(self, batch, batch_idx, dataloader_idx):
+def predict_step(self, batch, batch_idx):
+	batch = torch.view_as_real(batch[:,:L])
 	return self.infer(batch)
 
 model.predict_step = MethodType(predict_step, model)

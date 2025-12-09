@@ -10,7 +10,7 @@ from Functions import (
 
 from Transformer import LightningModel
 
-model_str = "6ybji6ws"
+model_str = "mitogrw5"
 DIR = f"Results/{model_str}/"
 
 natural_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
@@ -31,7 +31,7 @@ input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
 plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name=DIR + "Training-model-input")
 
 # Plot inference model input (only coefficients up to L)
-single_datapoint_coeffs = single_datapoint_coeffs[:L]
+single_datapoint_coeffs = single_datapoint_coeffs[:,:L]
 input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
 plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name=DIR + "Inference-model-input")
 
@@ -49,8 +49,10 @@ means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=Tr
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True).to(DEVICE)
 
 # Infer and plot prediction
-model_input  = (single_datapoint_coeffs - means) / stds
+model_input  = (single_datapoint_coeffs - means[:L]) / stds[:L]
 raw_pred = model.infer(torch.view_as_real(model_input))
-rescaled_pred = raw_pred * stds + means
-pred = inv_sh_transform(unflatten_coeffs(torch.view_as_complex(rescaled_pred)))
+print(raw_pred.shape)
+T = 60*121
+rescaled_pred = torch.view_as_complex(raw_pred.squeeze()) * stds[:,:T] + means[:,:T]
+pred = inv_sh_transform(unflatten_coeffs(rescaled_pred))
 plot_tensor_as_map(pred.squeeze(), show=False, save_name=DIR + "Inference-model-output")
