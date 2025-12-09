@@ -19,7 +19,6 @@ class CachedMultiHeadAttention(nn.Module):
         self.q_proj = nn.Linear(D, D, bias=True)
         self.k_proj = nn.Linear(D, D, bias=True)
         self.v_proj = nn.Linear(D, D, bias=True)
-
         self.out_proj = nn.Linear(D, D, bias=True)
 
     def forward(self, input, cached_k=None, cached_v=None):
@@ -49,18 +48,18 @@ class CachedMultiHeadAttention(nn.Module):
         # Query, key and value have shape (B,H,T,d)
 
         if T != 1:
-            mask = self.mask
-            assert mask.shape == (T, T)
+            mask = self.mask[:T,:T]
         else:
-            assert cached_k is not None
-            assert cached_v is not None
             B,H,Ti,d = cached_k.shape
             mask = self.mask[Ti,:Ti+1][None,:]
 
+        if cached_k is not None and cached_v is not None:
             key = torch.cat([cached_k, key], dim=2)
             value = torch.cat([cached_v, value], dim=2)
-        
+
+        mask = mask[None,None,...]
         dropout_p = self.dropout_prob if self.training else 0.
+
         attention = torch.nn.functional.scaled_dot_product_attention(
             query, 
             key, 
