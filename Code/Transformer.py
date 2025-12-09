@@ -7,29 +7,72 @@ import Metrics
 
 from lightning import LightningModule
 
-'''
-class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim: int, embedding_dim: int, n_heads: int, dropout_prob: float = 0.0):
+
+class CachedMultiHeadAttention(nn.Module):
+    def __init__(self, D: int, H: int, mask, dropout_prob: float):
         super().__init__()
-        self.q_proj = nn.Linear(input_dim, embedding_dim, bias=True)
-        self.k_proj = nn.Linear(input_dim, embedding_dim, bias=True)
-        self.v_proj = nn.Linear(input_dim, embedding_dim, bias=True)
+        assert D % H == 0
+        self.D = D
+        self.d = D // H
+        self.mask = mask
+        self.dropout_prob = dropout_prob
+        self.q_proj = nn.Linear(D, D, bias=True)
+        self.k_proj = nn.Linear(D, D, bias=True)
+        self.v_proj = nn.Linear(D, D, bias=True)
 
-        self.out_proj = nn.Linear(embedding_dim, input_dim, bias=True)
-        assert embedding_dim % n_heads == 0, "Embedding dim is not divisible by nheads"
-        self.head_dim = embedding_dim // n_heads
+        self.out_proj = nn.Linear(D, D, bias=True)
 
-    def forward(self, query, key, value):
-        query = self.q_proj(query)
-        query = query.unflatten(-1, [self.n_heads, self.head_dim]).transpose(1, 2)
-        key = self.k_proj(key)
-        key = key.unflatten(-1, [self.n_heads, self.head_dim]).transpose(1, 2)
-        value = self.v_proj(value)
-        value = value.unflatten(-1, [self.n_heads, self.head_dim]).transpose(1, 2)
-        attention = torch.nn.functional.scaled_dot_product_attention(query, key, value, dropout_p=self.dropout_prob)
-        attention = attention.transpose(1, 2).flatten(-2)
-        return self.out_proj(attention)
-'''
+    def forward(self, input, cached_k=None, cached_v=None):
+        """
+        Calculate multi-head self attention for input.
+        Use cached keys and values for inference.
+
+        Args:
+            input: Self attention input of shape (B,T,D) during training and 
+            (B,1,D) during inference.
+            cached_k: Cached keys of shape (B,H,Ti,d)
+            cached_v: Cached keys of shape (B,H,Ti,d)
+        Returns:
+            Tuple of transformer outputs of shape (B,T,D),
+            cached keys and cached values both of shape (B,H,T,d) during training
+            and (B,H,Ti+1,d) during inference
+        """
+        B,T,D = input.shape
+        assert self.D == D
+        
+        query = self.q_proj(input)
+        key = self.k_proj(input)
+        value = self.v_proj(input)
+        query = query.view(B, T, self.H, self.d).transpose(1, 2)
+        key = key.view(B, T, self.H, self.d).transpose(1, 2)
+        value = value.view(B, T, self.H, self.d).transpose(1, 2)
+        # Query, key and value have shape (B,H,T,d)
+
+        if T != 1:
+            mask = self.mask
+            assert mask.shape == (T, T)
+        else:
+            assert cached_k is not None
+            assert cached_v is not None
+            B,H,Ti,d = cached_k.shape
+            mask = self.mask[Ti,:Ti+1][None,:]
+
+            key = torch.cat([cached_k, key], dim=2)
+            value = torch.cat([cached_v, value], dim=2)
+        
+        dropout_p = self.dropout_prob if self.training else 0.
+        attention = torch.nn.functional.scaled_dot_product_attention(
+            query, 
+            key, 
+            value, 
+            attn_mask=mask,
+            is_causal=False,
+            dropout_p=dropout_p)
+
+        attention = attention.transpose(1, 2).reshape((B,T,D))
+        output = self.out_proj(attention)
+        return output, key, value
+
 
 def create_mask(T: int, L: int):
     '''
