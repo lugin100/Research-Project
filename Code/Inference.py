@@ -33,7 +33,11 @@ L = 30*61
 
 def predict_step(self, batch, batch_idx):
 	batch = torch.view_as_real(batch[:,:L])
-	return self.infer(batch)
+	pred_batch = self.infer(batch)
+	torch.save(pred_batch, f"{DIR}/coeffs/batch_{batch_idx}.pt")
+	rescaled_preds = torch.view_as_complex(pred_batch) * stds + means
+	reals = inv_sh_transform(unflatten_coeffs(rescaled_preds))
+	torch.save(reals, f"{DIR}/reals/batch_{batch_idx}.pt")
 
 model.predict_step = MethodType(predict_step, model)
 
@@ -42,7 +46,4 @@ stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True
 
 
 for i, pred_batch in enumerate(trainer.predict(model, dataloaders=dl)):
-	torch.save(pred_batch, f"{DIR}/coeffs/batch_{i}.pt")
-	rescaled_preds = torch.view_as_complex(pred_batch) * stds + means
-	reals = inv_sh_transform(unflatten_coeffs(rescaled_preds))
-	torch.save(reals, f"{DIR}/reals/batch_{i}.pt")
+	
