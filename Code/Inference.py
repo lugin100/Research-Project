@@ -31,6 +31,9 @@ trainer = Trainer(
 )
 L = 30*61
 
+os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=False)
+os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=False)
+
 def predict_step(self, batch, batch_idx):
 	batch = torch.view_as_real(batch[:,:L])
 	pred_batch = self.infer(batch)
@@ -45,5 +48,4 @@ means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=Tr
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True).to(DEVICE)
 
 
-for i, pred_batch in enumerate(trainer.predict(model, dataloaders=dl)):
-	
+trainer.predict(model, dataloaders=dl)
