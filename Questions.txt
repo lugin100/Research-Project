@@ -122,17 +122,20 @@ The median of the mixture component factors tends to zero, as kinda expected. An
 -> Not really. As the model gets more potent (with more parameters), it might be capable of using more than just 1-2 components and the problem is alleviated.
 
 ------------------------------
-
-
+09.12.25
 
 How does the batched sequence length work during inference? 
+-> Should not be any different, the sequence length is variable.
+So I can keep the same inference loop.
 
 Are there any existing models I should compare mine to?
+-> Just bilinear interpolation for the research project, as a simple baseline. For a paper, one would compare against a diffusion model.
 
+
+
+------------------------------
 Anything missing from the table of contents for the report? (In terms of structure/sections)
 
-Any typesetting guidelines? Shall I ask Nicole?
-
-Can I use the Tübingen ML Cluster/Uni Tübingen Logos on the report title page?
+Any typesetting guidelines?
 
 Is the title good?
