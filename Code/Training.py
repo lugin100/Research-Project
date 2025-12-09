@@ -3,6 +3,7 @@
 RUN_NAME = "Large-model"
 
 ############ Setup ###############
+import math
 import torch
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
@@ -14,7 +15,7 @@ def triangular_number(N):
 	return int(N*(N+1)/2)
 
 params = {
-	"N": 120,			# Maximal coefficient degree in training
+	"N": 121,			# Maximal coefficient degree in training
 	"PI": 8,  			# Number of predicted mixture components
 	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
 	"D": 512,  			# Embedding dimension
@@ -25,7 +26,7 @@ params = {
 }
 
 params["T"] = triangular_number(params["N"]) # Number of coefficients given in training
-params["L"] = triangular_number(params["N"]/2) # Number of coefficients given in inference
+params["L"] = triangular_number(math.ceil(params["N"]/2)) # Number of coefficients given in inference
 
 model = LightningModel(**params)
 
