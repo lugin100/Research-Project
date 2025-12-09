@@ -16,7 +16,7 @@ from Metrics import (
 	nll)
 import os
 
-model_str = "mu4ikkcc"
+model_str = "mitogrw5"
 DIR = f"Results/{model_str}/"
 
 os.makedirs(os.path.dirname(DIR), exist_ok=True)
@@ -24,9 +24,9 @@ LOG = DIR + "Evaluation.txt"
 
 with open(LOG, "w") as file:
 	with torch.no_grad():
-		T = int(60*61/2)
-		L = int(30*31/2)
-		B = 50
+		T = int(120*121/2)
+		L = int(60*61/2)
+		B = 4
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 

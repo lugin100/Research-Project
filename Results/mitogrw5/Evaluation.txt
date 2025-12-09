@@ -1,0 +1,13 @@
+MSE between test weather dataset and zeros:  274.7646484375
+MSE between test weather dataset and N(0,1) noise:  275.7413330078125
+MSE between test weather dataset and transformed N(0,1) coefficient noise:  131.69650268554688
+MSE between test weather dataset and predictions:  2.947883367538452
+------------------------------------------------------------
+Median of mixture components avaraged over all predictions:  3.59518000385089e-05
+Squared deviation of predicted means from 0, averaged over all predictions:  0.49363869428634644
+Median of variances averaged over all predictions:  0.0760571150617166
+------------------------------------------------------------
+NLL of zeros with predicted parameters:  7.067631374705922
+NLL of means with predicted parameters:  -5.11146168275313
+NLL of N(0,1) with predicted parameters:  10.209139303727584
+NLL of true data with predicted parameters:  -4.953303900631991
