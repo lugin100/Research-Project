@@ -28,7 +28,18 @@ Overview over ToDos for Research Projects
 - Implement MSE Loss on weather data, correlation on coefficients ✓
 - Calculate Metrics on zeros, white noise, ground truth data predictions ✓
 
-- Choose LR schedule, architecture hyperparameters from papers
+
 - Slurm script for non-interactive training process ✓
-- Try to train model on full data
-- Implement context length batching in transformer
+- Try to train model on full data ✓
+
+- Setup inference pipeline (as standalone script and after training)
+- Do inference for large model
+- Plot RMSE for coeffs and maps
+
+Model improvements:
+	- Initialize positional encoding correctly
+	- Change initialization for linear layers
+	- Evaluate perplexity of categorical PIs
+	- Implement context length batching
+	- Implement key-value-caching
+	- 
