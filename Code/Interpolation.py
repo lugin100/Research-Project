@@ -1,5 +1,5 @@
 import torch
-import torch.nn.Functional as F
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from Dataset import CoeffDataset
 from Functions import inv_sh_transform, unflatten_coeffs, DEVICE
@@ -7,8 +7,8 @@ from Functions import inv_sh_transform, unflatten_coeffs, DEVICE
 N = 120
 M = 60
 
-T = N*(N+1)/2
-L = M*(M+1)/2
+T = int(N*(N+1)/2)
+L = int(M*(M+1)/2)
 
 ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=L)
 
