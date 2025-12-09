@@ -1,11 +1,19 @@
 import torch
 
 
-def mean_squared_error(a, b):
-	# Computes MSE between (optionally batched) 2d real inputs a and b
-	a = torch.atleast_3d(a)
-	b = torch.atleast_3d(b)
-	return torch.nn.MSELoss(reduction="mean")(a, b)
+def RMSE(a, b, feature_dims=None, reduce=True):
+	"""
+	Computes RMSE between tensors a and b.
+	RMSE averages over given feature dimensions.
+	If 'feature_dims'=None, RMSE is just |a-b|
+	If 'reduce'=True, RMSEs are averaged over remainng dimensions.
+	"""
+	se = (a - b) ** 2
+	mse = se if feature_dims is None else torch.mean(se, dim=feature_dims)
+	rmse = torch.sqrt(mse)
+	return rmse if reduce is False else torch.mean(rmse)
+
+
 
 
 def beta_nll(pis, means, variances, targets, beta=0, average=True):

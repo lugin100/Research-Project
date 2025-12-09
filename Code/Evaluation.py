@@ -2,7 +2,7 @@ import torch
 
 from matplotlib import pyplot as plt
 from Plotting import plot_io
-from Metrics import mean_squared_error
+from Metrics import RMSE
 from glob import glob
 from Dataset import WeatherDataset
 from torch.utils.data import DataLoader
@@ -20,6 +20,7 @@ ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
 
 assert len(ground_truth_dl) == len(pred_files)
+
 with open(log_path, "w") as log_file:
 	with torch.no_grad():
 
@@ -30,6 +31,6 @@ with open(log_path, "w") as log_file:
 			assert batch.shape == ground_truth.shape
 
 
-			mses.append(mean_squared_error(batch, ground_truth))
+			mses.append(RMSE(batch, ground_truth, feature_dims=(-1,-2), reduce=True))
 
 		print("MSE between test weather dataset and predictions: ", sum(mses)/len(mses), file=log_file)
