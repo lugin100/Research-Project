@@ -1,3 +1,4 @@
+import os
 import torch
 from types import MethodType
 from Transformer import LightningModel
@@ -17,7 +18,7 @@ DIR = f"Results/{model_str}/Predictions"
 # Load dataset
 data_path = "data/wind-speed_level-500_testset"
 testset = CoeffDataset(data_path)
-B = 4
+B = 5
 dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 # Load model checkpoint
@@ -30,9 +31,9 @@ trainer = Trainer(
     strategy="ddp",  # Distributed Data Parallel
 )
 L = 30*61
-
-os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=False)
-os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=False)
+os.makedirs(os.path.dirname(DIR), exist_ok=True)
+os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=True)
+os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=True)
 
 def predict_step(self, batch, batch_idx):
 	batch = torch.view_as_real(batch[:,:L])
