@@ -31,6 +31,7 @@ trainer = Trainer(
     strategy="ddp",  # Distributed Data Parallel
 )
 L = 30*61
+T = 60*121
 os.makedirs(os.path.dirname(DIR), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=True)
@@ -45,8 +46,8 @@ def predict_step(self, batch, batch_idx):
 
 model.predict_step = MethodType(predict_step, model)
 
-means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True).to(DEVICE)
-stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True).to(DEVICE)
-
+means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[:,:T].to(DEVICE)
+stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[:,:T].to(DEVICE)
+print(means.shape)
 
 trainer.predict(model, dataloaders=dl)
