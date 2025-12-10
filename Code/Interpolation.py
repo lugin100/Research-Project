@@ -18,7 +18,7 @@ loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 with torch.no_grad():
 	for i, batch in enumerate(loader):
 		batch = batch.to(DEVICE)
-		input = inv_sh_transform(unflatten_coeffs(batch)).unsqueeze(1) # (B,1,M,M)
-		result = F.interpolate(input, size=(N,N), mode="bilinear")
-		result = result.cpu().squeeze(1) # (B,N,N)
-		torch.save(result, f"Results/interpolation/batch_{i}")
+		input = inv_sh_transform(unflatten_coeffs(batch)).unsqueeze(1)
+		result = F.interpolate(input, size=(N+1,2*N), mode="bilinear")
+		result = result.cpu().squeeze(1)
+		torch.save(result, f"Results/interpolation/Predictions/reals/batch_{i}.pt")
