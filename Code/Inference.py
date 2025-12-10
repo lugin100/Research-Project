@@ -46,8 +46,8 @@ def predict_step(self, batch, batch_idx):
 
 model.predict_step = MethodType(predict_step, model)
 
-means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[:,:T].to(DEVICE)
-stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[:,:T].to(DEVICE)
+means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
+stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
 print(means.shape)
 
 trainer.predict(model, dataloaders=dl)
