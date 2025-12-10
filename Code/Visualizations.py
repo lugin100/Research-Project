@@ -13,7 +13,7 @@ from Functions import (
 model_str = "mitogrw5"
 model_path = f"Results/{model_str}/"
 
-ground_truth_path = "Results/ground-truth"
+ground_truth_path = "Results/ground-truth/"
 if not os.path.exists(ground_truth_path):
 	os.makedirs(ground_truth_path)
 	natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
