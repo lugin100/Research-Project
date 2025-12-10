@@ -3,22 +3,19 @@ import torch
 from Plotting import plot_tensor_as_map
 from Dataset import WeatherDataset
 from Functions import (
-		DEVICE,
 		triangular_number,
 		flatten_coeffs,
 		unflatten_coeffs,
 		sh_transform,
 		inv_sh_transform)
 
-from Transformer import LightningModel
 
 model_str = "mitogrw5"
 model_path = f"Results/{model_str}/"
 
 ground_truth_path = "Results/ground-truth"
 if not os.path.exists(ground_truth_path):
-    os.makedirs(ground_truth_path)
-	
+	os.makedirs(ground_truth_path)
 	natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
 
 	# Plot single datapoint as example
