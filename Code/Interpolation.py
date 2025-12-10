@@ -12,7 +12,7 @@ L = int(M*(M+1)/2)
 
 ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=L)
 
-B = 4
+B = 256
 loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
 with torch.no_grad():
