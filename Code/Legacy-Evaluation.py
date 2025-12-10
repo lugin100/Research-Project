@@ -132,4 +132,4 @@ with open(LOG, "w") as file:
 		plt.plot(nll_true/n)
 		plt.ylabel("NLL of true data")
 		plt.xlabel("Inferred parameter index")
-		plot_io(show=False, save_name=DIR + "NLL-for-inferred-params")
+		plot_io(save_name=DIR + "NLL-for-inferred-params")

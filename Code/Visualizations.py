@@ -22,7 +22,7 @@ if not os.path.exists(ground_truth_path):
 
 	# Plot single datapoint as example
 	single_datapoint = natural_ds.__getitem__(0)
-	plot_tensor_as_map(single_datapoint, show=False, save_name=ground_truth_path + "Ground-Truth")
+	plot_tensor_as_map(single_datapoint, save_name=ground_truth_path + "Ground-Truth")
 
 	# Transform to coefficients
 	single_datapoint_coeffs = flatten_coeffs(sh_transform(single_datapoint[None,...]))
@@ -31,16 +31,16 @@ if not os.path.exists(ground_truth_path):
 	# Plot training model input (coefficients zeroed after L)
 	single_datapoint_coeffs[:,L:] = 0
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
-	plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name=ground_truth_path + "Training-model-input")
+	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Training-model-input")
 
 	# Plot inference model input (only coefficients up to L)
 	single_datapoint_coeffs = single_datapoint_coeffs[:,:L]
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
-	plot_tensor_as_map(input_datapoint.squeeze(), show=False, save_name=ground_truth_path + "Inference-model-input")
+	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Inference-model-input")
 
 
 # Load prediction
 batch = torch.load(model_path + "Predictions/reals/batch_0.pt", weights_only=True)
 first_sample = batch[0]
 
-plot_tensor_as_map(first_sample, show=False, save_name=model_path + "Inference-model-output")
+plot_tensor_as_map(first_sample, save_name=model_path + "Inference-model-output")

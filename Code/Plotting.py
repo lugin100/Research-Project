@@ -6,7 +6,7 @@ import numpy as np
 
 plt.rcParams.update({'font.size': 16})
 
-def plot_io(show=True, save_name=None):
+def plot_io(show=False, save_name=None):
     plt.tight_layout()
     if save_name is not None:
         path = save_name + ".pdf"
