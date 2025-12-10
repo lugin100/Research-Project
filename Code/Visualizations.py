@@ -13,13 +13,13 @@ from Transformer import LightningModel
 model_str = "mitogrw5"
 DIR = f"Results/{model_str}/"
 
-natural_ds = WeatherDataset("wind_speed", time_slice=slice("1970-01-01", "1970-01-02", None), level=500)
+natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
 
 # Works for full size model
 L = int(60*61/2)
 
 # Plot single datapoint as example
-single_datapoint = natural_ds.__getitem__(4)
+single_datapoint = natural_ds.__getitem__(0)
 plot_tensor_as_map(single_datapoint, show=False, save_name=DIR + "Ground-Truth")
 
 # Transform to coefficients
