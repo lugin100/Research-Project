@@ -13,17 +13,20 @@ from Functions import (
 model_str = "mitogrw5"
 model_path = f"Results/{model_str}/"
 
+
 ground_truth_path = "Results/ground-truth/"
+
+natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
+ground_truth = natural_ds.__getitem__(0)
 if not os.path.exists(ground_truth_path):
 	os.makedirs(ground_truth_path)
-	natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
 
 	# Plot single datapoint as example
-	single_datapoint = natural_ds.__getitem__(0)
-	plot_tensor_as_map(single_datapoint, save_name=ground_truth_path + "Ground-Truth")
+	
+	plot_tensor_as_map(ground_truth, save_name=ground_truth_path + "Ground-Truth")
 
 	# Transform to coefficients
-	single_datapoint_coeffs = flatten_coeffs(sh_transform(single_datapoint[None,...]))
+	single_datapoint_coeffs = flatten_coeffs(sh_transform(ground_truth[None,...]))
 
 	L = triangular_number(60)
 	# Plot training model input (coefficients zeroed after L)
@@ -41,4 +44,7 @@ if not os.path.exists(ground_truth_path):
 batch = torch.load(model_path + "Predictions/reals/batch_0.pt", weights_only=True)
 first_sample = batch[0]
 
-plot_tensor_as_map(first_sample, save_name=model_path + "Inference-model-output")
+plot_tensor_as_map(first_sample, save_name=model_path + "model-output")
+
+diff = first_sample - ground_truth
+plot_tensor_as_map(diff, save_name=model_path + "ground-truth-difference")
