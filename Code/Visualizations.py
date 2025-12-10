@@ -12,7 +12,7 @@ from Functions import (
 from Transformer import LightningModel
 
 model_str = "mitogrw5"
-DIR = f"Results/{model_str}/"
+model_path = f"Results/{model_str}/"
 
 ground_truth_path = "Results/ground-truth"
 if not os.path.exists(ground_truth_path):
@@ -40,8 +40,7 @@ if not os.path.exists(ground_truth_path):
 
 
 # Load prediction
-torch.load()
-T = 60*121
-rescaled_pred = torch.view_as_complex(raw_pred.squeeze()) * stds[:T] + means[:T]
-pred = inv_sh_transform(unflatten_coeffs(rescaled_pred[None,:]))
-plot_tensor_as_map(pred.squeeze(), show=False, save_name=DIR + "Inference-model-output")
+batch = torch.load(model_path + "Predictions/reals/batch_0.pt", weights_only=True)
+first_sample = batch[0]
+
+plot_tensor_as_map(first_sample, show=False, save_name=model_path + "Inference-model-output")
