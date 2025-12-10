@@ -5,6 +5,8 @@ import torch
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+def triangular_number(N):
+    return int(N*(N+1)/2)
 
 def sh_transform(data, requires_grad=False):
     (B, nlat, nlon) = data.shape

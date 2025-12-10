@@ -5,6 +5,7 @@ from Transformer import LightningModel
 from matplotlib import pyplot as plt
 from Functions import (
 	DEVICE,
+	triangular_number,
 	inv_sh_transform,
 	unflatten_coeffs)
 from Dataset import CoeffDataset
@@ -24,8 +25,8 @@ LOG = DIR + "Evaluation.txt"
 
 with open(LOG, "w") as file:
 	with torch.no_grad():
-		T = int(120*121/2)
-		L = int(60*61/2)
+		T = triangular_number(120)
+		L = triangular_number(60)
 		B = 4
 		ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=T)
 		loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)

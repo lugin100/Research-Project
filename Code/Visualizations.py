@@ -4,6 +4,7 @@ from Plotting import plot_tensor_as_map
 from Dataset import WeatherDataset
 from Functions import (
 		DEVICE,
+		triangular_number,
 		flatten_coeffs,
 		unflatten_coeffs,
 		sh_transform,
@@ -27,7 +28,7 @@ if not os.path.exists(ground_truth_path):
 	# Transform to coefficients
 	single_datapoint_coeffs = flatten_coeffs(sh_transform(single_datapoint[None,...]))
 
-	L = int(60*61/2)
+	L = triangular_number(60)
 	# Plot training model input (coefficients zeroed after L)
 	single_datapoint_coeffs[:,L:] = 0
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))

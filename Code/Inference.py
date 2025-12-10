@@ -7,6 +7,7 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Functions import (
 	DEVICE,
+	triangular_number,
 	unflatten_coeffs,
 	inv_sh_transform)
 
@@ -30,8 +31,8 @@ trainer = Trainer(
     devices="auto",  # Uses all available GPUs
     strategy="ddp",  # Distributed Data Parallel
 )
-L = 30*61
-T = 60*121
+L = triangular_number(60)
+T = triangular_number(120)
 os.makedirs(os.path.dirname(DIR), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=True)

@@ -9,10 +9,9 @@ torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 ############ Model ###############
 
+from Functions import triangular_number
 from Transformer import LightningModel
 
-def triangular_number(N):
-	return int(N*(N+1)/2)
 
 params = {
 	"N": 121,			# Maximal coefficient degree in training
