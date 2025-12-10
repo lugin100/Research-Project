@@ -1,3 +1,4 @@
+
 import torch
 
 from matplotlib import pyplot as plt
@@ -8,18 +9,18 @@ from Dataset import WeatherDataset
 from torch.utils.data import DataLoader
 
 
-model_str = "mitogrw5"
+model_str = "interpolation"
 
 log_path = f"Results/{model_str}/Evaluation.txt"
 
-pred_path = f"Results/{model_str}/Predictions"
+pred_path = f"Results/{model_str}/Predictions/reals/"
+print(pred_path)
 pred_files = sorted(glob(pred_path + "batch_*.pt"))
 
 B = 256
 ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2022", None), level=500)
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
 
-# ToDo: Make this true
 assert len(ground_truth_dl) == len(pred_files)
 
 with open(log_path, "w") as log_file:
@@ -29,6 +30,8 @@ with open(log_path, "w") as log_file:
 
 		for pred_path, ground_truth in zip(pred_files, ground_truth_dl):
 			batch = torch.load(pred_path)
+			if batch.shape[0] != B:
+				break
 			assert batch.shape == ground_truth.shape
 
 

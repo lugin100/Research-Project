@@ -25,3 +25,6 @@ wandb
 autoregressive-downcasting
 slurm-output
 lightning_logs
+
+# Model outputs
+Results/*/Predictions
