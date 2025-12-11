@@ -10,7 +10,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "interpolation"
+model_str = "mitogrw5"
 model_path = f"Results/{model_str}/"
 
 
@@ -20,14 +20,14 @@ data_path = "data/wind-speed_level-500_testset"
 natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
 ground_truth = natural_ds.__getitem__(0)
 
-T = 7381
+T = triangular_number(120)
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T]
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T]
 
 coeff_ds = CoeffDataset(data_path)
-gt_coeff = coeff_ds.__getitem__(0)
+gt_coeff = coeff_ds.__getitem__(0)[:T]
 
-gt_coeff = (gt_coeff * stds + means)[:,:T]
+gt_coeff = (gt_coeff * stds + means)
 gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff)).squeeze().cpu()
 
 if not os.path.exists(ground_truth_path):
