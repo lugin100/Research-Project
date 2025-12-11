@@ -10,7 +10,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "mitogrw5"
+model_str = "identity"
 model_path = f"Results/{model_str}/"
 
 
@@ -27,8 +27,8 @@ stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True
 coeff_ds = CoeffDataset(data_path)
 gt_coeff = coeff_ds.__getitem__(0)
 
-gt_coeff = (gt_coeff * stds + means)[:,:7260]
-gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff)).squeeze().to(DEVICE)
+gt_coeff = (gt_coeff * stds + means)[:,:T]
+gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff)).squeeze().cpu()
 
 if not os.path.exists(ground_truth_path):
 	os.makedirs(ground_truth_path)
@@ -54,7 +54,7 @@ if not os.path.exists(ground_truth_path):
 
 # Load prediction
 batch = torch.load(model_path + "Predictions/reals/batch_0.pt", weights_only=True)
-first_sample = batch[0]
+first_sample = batch[0].cpu()
 
 plot_tensor_as_map(first_sample, save_name=model_path + "model-output")
 
