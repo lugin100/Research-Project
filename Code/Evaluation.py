@@ -8,7 +8,7 @@ from Dataset import WeatherDataset, CoeffDataset
 from torch.utils.data import DataLoader
 
 
-model_str = "identity"
+model_str = "interpolation"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/Evaluation.txt"
 
@@ -16,7 +16,7 @@ pred_path = f"Results/{model_str}/Predictions/reals/"
 
 pred_files = sorted(glob(pred_path + "batch_*.pt"))
 
-B = 1000
+B = 256
 #ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2022", None), level=500)
 ground_truth_ds = CoeffDataset("data/wind-speed_level-500_testset")
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
