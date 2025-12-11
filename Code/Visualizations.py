@@ -10,7 +10,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "identity"
+model_str = "interpolation"
 model_path = f"Results/{model_str}/"
 
 
