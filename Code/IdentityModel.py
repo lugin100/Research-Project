@@ -12,8 +12,8 @@ ds = CoeffDataset("data/wind-speed_level-500_testset")
 B = 1000
 loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
-means = torch.load("data/wind-speed_level-500_trainset_means.pt", weights_only=True)[None,:T].to(DEVICE)
-stds = torch.load("data/wind-speed_level-500_trainset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
+means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
+stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
 
 with torch.no_grad():
 	for i, batch in enumerate(loader):
