@@ -1,1 +1,1 @@
-RMSE between test weather dataset and predictions:  38.62765495593731
+RMSE between test weather dataset and predictions:  10.901940660817283

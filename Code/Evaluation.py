@@ -8,7 +8,7 @@ from Dataset import WeatherDataset, CoeffDataset
 from torch.utils.data import DataLoader
 
 
-model_str = "interpolation"
+model_str = "mitogrw5"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/Evaluation.txt"
 
@@ -16,7 +16,7 @@ pred_path = f"Results/{model_str}/Predictions/reals/"
 
 pred_files = sorted(glob(pred_path + "batch_*.pt"))
 
-B = 256
+B = 5
 #ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2022", None), level=500)
 ground_truth_ds = CoeffDataset("data/wind-speed_level-500_testset")
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
@@ -25,7 +25,7 @@ ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuff
 #print(len(pred_files))
 #assert len(ground_truth_dl) == len(pred_files)
 
-T = triangular_number(121)
+T = triangular_number(120)
 
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
