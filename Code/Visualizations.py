@@ -3,12 +3,12 @@ import torch
 from Plotting import plot_tensor_as_map
 from Dataset import WeatherDataset, CoeffDataset
 from Functions import (
+		DEVICE,
 		triangular_number,
 		flatten_coeffs,
 		unflatten_coeffs,
 		sh_transform,
 		inv_sh_transform)
-
 
 model_str = "mitogrw5"
 model_path = f"Results/{model_str}/"
@@ -20,12 +20,16 @@ data_path = "data/wind-speed_level-500_testset"
 natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
 ground_truth = natural_ds.__getitem__(0)
 
+T = 7381
+means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T]
+stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T]
+
 coeff_ds = CoeffDataset(data_path)
 gt_coeff = coeff_ds.__getitem__(0)
 
-gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff[None,:])).squeeze()
+gt_coeff = (gt_coeff * stds + means)[:,:7260]
+gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff)).squeeze().to(DEVICE)
 
-assert torch.allclose(gt_reals, ground_truth)
 if not os.path.exists(ground_truth_path):
 	os.makedirs(ground_truth_path)
 
