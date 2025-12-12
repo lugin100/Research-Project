@@ -1,4 +1,5 @@
-
+from pathlib import Path
+import re
 import torch
 
 from Metrics import RMSE
@@ -8,16 +9,22 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Plotting import plot_coeffs_as_img
 
-model_str = "mitogrw5"
+model_str = "identity"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/"
 
 pred_path = f"Results/{model_str}/Predictions/"
 
-real_pred_files = sorted(glob(pred_path + "reals/batch_*.pt"))
-coeff_pred_files = sorted(glob(pred_path + "coeffs/batch_*.pt"))
+def sort(file):
+	return int(re.search(r"batch_(\d+)\.pt", file.name).group(1))
 
-B = 5
+real_pred_files = Path(pred_path).glob("reals/batch_*.pt")
+real_pred_files = sorted(real_pred_files, key=sort)
+
+coeff_pred_files = Path(pred_path).glob("coeffs/batch_*.pt")
+coeff_pred_files = sorted(coeff_pred_files, key=sort)
+
+B = 1000
 #ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2022", None), level=500)
 ground_truth_ds = CoeffDataset("data/wind-speed_level-500_testset")
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
@@ -26,7 +33,7 @@ ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuff
 #print(len(pred_files))
 #assert len(ground_truth_dl) == len(pred_files)
 
-T = triangular_number(120)
+T = triangular_number(121)
 
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
