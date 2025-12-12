@@ -35,6 +35,7 @@ Overview over ToDos for Research Projects
 - Setup inference pipeline (as standalone script and after training)
 - Do inference for large model
 - Plot RMSE for coeffs and maps
+- Fix colorbar ranges and colormap
 
 Model improvements:
 	- Initialize positional encoding correctly
