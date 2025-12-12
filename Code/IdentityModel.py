@@ -17,6 +17,7 @@ stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True
 
 with torch.no_grad():
 	for i, batch in enumerate(loader):
+		torch.save(torch.view_as_real(batch.cpu()), f"Results/identity/Predictions/coeffs/batch_{i}.pt")
 		batch = batch.to(DEVICE)
 		batch = batch * stds + means
 		result = inv_sh_transform(unflatten_coeffs(batch))
