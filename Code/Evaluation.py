@@ -3,7 +3,6 @@ import re
 import torch
 
 from Metrics import RMSE
-from glob import glob
 from Functions import DEVICE, triangular_number, inv_sh_transform, unflatten_coeffs
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
