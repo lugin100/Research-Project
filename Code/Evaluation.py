@@ -56,12 +56,13 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 		i = 0
 		rmses = torch.zeros(T)
 		for pred_path, gt_batch in zip(coeff_pred_files, ground_truth_dl):
-			pred_batch = torch.load(pred_path, weights_only=True)
+			pred_batch = torch.load(pred_path, weights_only=True).cpu()
 			if pred_batch.shape[0] != B:
 				break
+			gt_batch = torch.view_as_real(gt_batch[:,:T]).cpu()
 			assert pred_batch.shape == gt_batch.shape
-			rmses_batch = RMSE(pred_batch, gt_batch, feature_dims=None, reduce=False)
-			rmses.append(rmses_batch.mean(axis=0))
+			rmses_batch = RMSE(pred_batch, gt_batch, feature_dims=-1, reduce=False)
+			rmses += rmses_batch.mean(axis=0)
 			i += 1
 		rmses = rmses / i
 
@@ -69,4 +70,4 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 		plot_coeffs_as_img(rmses, show=False, save_name=log_path + "Coefficient_RMSE")
 
 		rmse = rmses.mean()
-		print("RMSE between predicted coefficients and ground truth: ", rmse, file=log_file)
+		print("RMSE between predicted coefficients and ground truth: ", rmse.item(), file=log_file)
