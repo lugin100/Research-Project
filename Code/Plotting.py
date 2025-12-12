@@ -26,14 +26,14 @@ def plot_tensor_as_map(data, show=True, save_name=None):
     data = data.cpu().numpy()
     plt.imshow(data)
     plt.xlabel("Longitude")
-    plt.ylabel("Latitude")    
+    plt.ylabel("Latitude")
     plt.colorbar()
     plot_io(show, save_name)
 
 def plot_coeffs_as_img(data, show=True, save_name=None):
     assert isinstance(data, torch.Tensor)
     data = data.cpu().numpy()
-    plt.imshow(data, norm=LogNorm())
+    plt.imshow(data)#, norm=LogNorm())
     plt.colorbar()
     plot_io(show, save_name)
 
