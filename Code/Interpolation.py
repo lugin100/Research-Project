@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from Dataset import CoeffDataset
-from Functions import inv_sh_transform, unflatten_coeffs, DEVICE
+from Functions import sh_transform, flatten_coeffs, inv_sh_transform, unflatten_coeffs, DEVICE
 
 N = 120
 M = 60
@@ -10,8 +10,8 @@ M = 60
 T = int(N*(N+1)/2)
 L = int(M*(M+1)/2)
 
-means = torch.load("data/wind-speed_level-500_trainset_means.pt", weights_only=True)[None,:L].to(DEVICE)
-stds = torch.load("data/wind-speed_level-500_trainset_stds.pt", weights_only=True)[None,:L].to(DEVICE)
+means = torch.load("data/wind-speed_level-500_trainset_means.pt", weights_only=True).to(DEVICE)
+stds = torch.load("data/wind-speed_level-500_trainset_stds.pt", weights_only=True).to(DEVICE)
 
 
 ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=L)
@@ -22,8 +22,13 @@ loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 with torch.no_grad():
 	for i, batch in enumerate(loader):
 		batch = batch.to(DEVICE)
-		batch = batch * stds + means
+		batch = batch * stds[None,:L] + means[None,:L]
 		input = inv_sh_transform(unflatten_coeffs(batch)).unsqueeze(1)
 		result = F.interpolate(input, size=(N+1,2*N), mode="bilinear")
-		result = result.cpu().squeeze(1)
-		torch.save(result, f"Results/interpolation/Predictions/reals/batch_{i}.pt")
+		result = result.squeeze(1)
+		torch.save(result.cpu(), f"Results/interpolation/Predictions/reals/batch_{i}.pt")
+
+		coeffs = flatten_coeffs(sh_transform(result))
+		coeffs = (coeffs - means) / stds
+		coeffs = torch.view_as_real(coeffs)
+		torch.save(coeffs.cpu(), f"Results/interpolation/Predictions/coeffs/batch_{i}.pt")
