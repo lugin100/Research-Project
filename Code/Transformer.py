@@ -19,7 +19,6 @@ class CachedMultiHeadAttention(nn.Module):
         self.q_proj = nn.Linear(D, D, bias=True)
         self.k_proj = nn.Linear(D, D, bias=True)
         self.v_proj = nn.Linear(D, D, bias=True)
-        self.out_proj = nn.Linear(D, D, bias=True)
 
     def forward(self, input, cached_k=None, cached_v=None):
         """
@@ -69,8 +68,7 @@ class CachedMultiHeadAttention(nn.Module):
             dropout_p=dropout_p)
 
         attention = attention.transpose(1, 2).reshape((B,T,D))
-        output = self.out_proj(attention)
-        return output, key, value
+        return attention, key, value
 
 
 def create_mask(T: int, L: int):
@@ -97,16 +95,36 @@ def initialize_layer(layer):
         return
 
 
+class TransformerBlock(nn.Module):
+    def __init__(self, D: int, H: int, mask, dropout_prob: float):
+        super().__init__()
+        self.layerNorm = nn.LayerNorm(D)
+        self.attention = CachedMultiHeadAttention(D, H, mask, dropout_prob)
+        self.feedforward = nn.Sequential(
+                            nn.Linear(D, D),
+                            nn.ReLu(),
+                            nn.Linear(D, D)
+                            )
+
+    def forward(self, x, key_cache, val_cache):
+        residual = x
+        attention, key_cache, val_cache = self.attention(x, key_cache, val_cache)
+        x = residual + attention
+        x = self.layerNorm(x)
+        x = self.feedforward(x)
+        return x, key_cache, val_cache
+
+
 class TransformerModel(nn.Module):
 
-    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: float, NORM_FIRST: bool, **kwargs):
+    def __init__(self, T: int, L: int, D: int, H: int, R: int, PI: int, EPS: float, BETA: float, NORM_FIRST: bool, DROPOUT_PROB: float):
         super().__init__()
-        del kwargs
         self.embedding = nn.Linear(2, D)
         self.positional_encoding = nn.Parameter(torch.zeros(T, D))
-        transformer_layer = torch.nn.TransformerEncoderLayer(d_model=D, nhead=H, batch_first=True, norm_first=NORM_FIRST)
-        self.transformer = torch.nn.TransformerEncoder(transformer_layer, num_layers=R, enable_nested_tensor=False) # initializes all identically -> reinitialize afterwards
         self.mask = create_mask(T, L).to(DEVICE)
+        self.transformers = nn.Sequential(
+            *(R * [TransformerBlock(D, H, self.mask, DROPOUT_PROB)]))
+            # initializes all identically -> reinitialize afterwards
         self.unembedding = torch.nn.Linear(D, 5*PI)
         self.L = L
         self.T = T
@@ -118,9 +136,10 @@ class TransformerModel(nn.Module):
 
 
     def forward(self, input):
-        #input.shape # (B, T, 2)
+        # For training
+        # input.shape == (B, T, 2)
         embedded = self.embedding(input) + self.positional_encoding.unsqueeze(0) # (B, T, D)
-        output = self.transformer(embedded, mask=self.mask) # (B, T, D)
+        output = self.transformers(embedded, None, None) # (B, T, D)
         output = self.unembedding(output) # (B, T, 5*PI)
         return output
 
