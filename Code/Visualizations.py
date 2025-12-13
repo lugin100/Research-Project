@@ -10,7 +10,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "mitogrw5"
+model_str = "random"
 model_path = f"Results/{model_str}/"
 
 
@@ -20,7 +20,7 @@ data_path = "data/wind-speed_level-500_testset"
 natural_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2012", None), level=500)
 ground_truth = natural_ds.__getitem__(0)
 
-T = triangular_number(120)
+T = triangular_number(121)
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T]
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T]
 
@@ -34,7 +34,7 @@ if not os.path.exists(ground_truth_path):
 	os.makedirs(ground_truth_path)
 
 	# Plot single datapoint as example
-	
+
 	plot_tensor_as_map(ground_truth, save_name=ground_truth_path + "Ground-Truth")
 
 	# Transform to coefficients
