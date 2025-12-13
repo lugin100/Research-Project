@@ -10,7 +10,6 @@ from Functions import (
 	triangular_number,
 	unflatten_coeffs,
 	inv_sh_transform)
-from types import MethodType
 
 
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
@@ -62,7 +61,7 @@ def predict_step(self, batch, batch_idx):
 			f"{DIR}/coeffs/sample_{global_idx}.pt")
 	torch.save(reals[batch_idx],
 		f"{DIR}/reals/sample_{global_idx}.pt")
-	
+
 
 model.predict_step = MethodType(predict_step, model)
 
