@@ -58,16 +58,16 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 			rmses.append(rmse)
 		"""
 		pred_index = 0
-		for pred_batch in real_pred_files:
-			pred_batch = torch.load(pred_path, weights_only=True).to(DEVICE)
+		for pred_batch_path in real_pred_files:
+			pred_batch = torch.load(pred_batch_path, weights_only=True).to(DEVICE)
 			for pred_item in pred_batch:
 				gt_index = 8 * pred_index
 				gt_item = ground_truth_ds.__getitem__(gt_index)
 				pred_index += 1
-				gt_item = gt_item[:,:T].to(DEVICE)
+				gt_item = gt_item[None,:T].to(DEVICE)
 				gt_item = gt_item * stds + means
 				gt_reals_item = unflatten_coeffs(inv_sh_transform(gt_item))
-				rmse = RMSE(pred_item, gt_reals_item, feature_dims=(-1,-2), reduce=True)
+				rmse = RMSE(pred_item, gt_reals_item.squeeze(), feature_dims=(-1,-2), reduce=True)
 				rmse = rmse.cpu().item()
 				rmses.append(rmse)
 			
@@ -75,8 +75,9 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
 
 		# RMSE of predicted coefficients
-		i = 0
 		rmses = torch.zeros(T)
+		i = 0
+		"""
 		for pred_path, gt_batch in zip(coeff_pred_files, ground_truth_dl):
 			pred_batch = torch.load(pred_path, weights_only=True).cpu()
 			if pred_batch.shape[0] != B:
@@ -89,8 +90,17 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 			rmses_batch = RMSE(pred_batch, gt_batch, feature_dims=-1, reduce=False)
 			rmses += rmses_batch.mean(axis=0)
 			i += 1
-		rmses = rmses / i
+		"""
+		for pred_batch_path in real_pred_files:
+			pred_batch = torch.load(pred_batch_path, weights_only=True).to(DEVICE)
+			for pred_item in pred_batch:
+				gt_index = 8 * i
+				gt_item = ground_truth_ds.__getitem__(gt_index)
+				i += 1
+				gt_item = torch.view_as_real(gt_item[:T]).cpu()
+				rmses += RMSE(pred_item, gt_item, feature_dims=-1, reduce=False)
 
+		rmses = rmses / i
 		rmses = unflatten_coeffs(rmses.unsqueeze(0)).squeeze()
 		plot_coeffs_as_img(rmses, show=False, save_name=log_path + "Coefficient_RMSE")
 
