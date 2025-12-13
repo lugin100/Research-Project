@@ -8,7 +8,7 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Plotting import plot_coeffs_as_img
 
-model_str = "interpolation"
+model_str = "random"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/"
 
@@ -23,7 +23,7 @@ real_pred_files = sorted(real_pred_files, key=sort)
 coeff_pred_files = Path(pred_path).glob("coeffs/batch_*.pt")
 coeff_pred_files = sorted(coeff_pred_files, key=sort)
 
-B = 256
+B = 10000
 #ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2022", None), level=500)
 ground_truth_ds = CoeffDataset("data/wind-speed_level-500_testset")
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)

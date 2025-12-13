@@ -18,7 +18,9 @@ stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True
 
 with torch.no_grad():
 	for i, batch in enumerate(loader):
+		batch = torch.view_as_real(batch)
 		batch[:,L:,:] = torch.randn_like(batch[:,L:,:])
+		batch = torch.view_as_complex(batch)
 		torch.save(torch.view_as_real(batch.cpu()), f"Results/random/Predictions/coeffs/batch_{i}.pt")
 		batch = batch.to(DEVICE)
 		batch = batch * stds + means
