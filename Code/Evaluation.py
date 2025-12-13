@@ -3,7 +3,7 @@ import re
 import torch
 
 from Metrics import RMSE
-from Functions import DEVICE, triangular_number, inv_sh_transform, unflatten_coeffs
+from Functions import DEVICE, triangular_number, inv_sh_transform, unflatten_coeffs, flatten_coeffs
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Plotting import plot_coeffs_as_img
@@ -34,8 +34,8 @@ ground_truth_ds = CoeffDataset("data/wind-speed_level-500_testset")
 
 T = triangular_number(120)
 
-means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
-stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
+means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].cpu()
+stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].cpu()
 
 with open(log_path + "Evaluation.txt", "w") as log_file:
 	with torch.no_grad():
@@ -59,18 +59,18 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 		"""
 		pred_index = 0
 		for pred_batch_path in real_pred_files:
-			pred_batch = torch.load(pred_batch_path, weights_only=True).to(DEVICE)
+			pred_batch = torch.load(pred_batch_path, weights_only=True).cpu()
 			for pred_item in pred_batch:
 				gt_index = 8 * pred_index
-				gt_item = ground_truth_ds.__getitem__(gt_index)
+				gt_item = ground_truth_ds.__getitem__(gt_index).cpu()
 				pred_index += 1
-				gt_item = gt_item[None,:T].to(DEVICE)
+				gt_item = gt_item[None,:T].cpu()
 				gt_item = gt_item * stds + means
-				gt_reals_item = unflatten_coeffs(inv_sh_transform(gt_item))
-				rmse = RMSE(pred_item, gt_reals_item.squeeze(), feature_dims=(-1,-2), reduce=True)
+				gt_reals_item = inv_sh_transform(unflatten_coeffs(gt_item))
+				rmse = RMSE(pred_item.cpu(), gt_reals_item.squeeze().cpu(), feature_dims=(-1,-2), reduce=True)
 				rmse = rmse.cpu().item()
 				rmses.append(rmse)
-			
+
 
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
 
@@ -91,8 +91,8 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 			rmses += rmses_batch.mean(axis=0)
 			i += 1
 		"""
-		for pred_batch_path in real_pred_files:
-			pred_batch = torch.load(pred_batch_path, weights_only=True).to(DEVICE)
+		for pred_batch_path in coeff_pred_files:
+			pred_batch = torch.load(pred_batch_path, weights_only=True).cpu()
 			for pred_item in pred_batch:
 				gt_index = 8 * i
 				gt_item = ground_truth_ds.__getitem__(gt_index)
