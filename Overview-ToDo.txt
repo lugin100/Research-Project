@@ -32,10 +32,10 @@ Overview over ToDos for Research Projects
 - Slurm script for non-interactive training process ✓
 - Try to train model on full data ✓
 
-- Setup inference pipeline (as standalone script and after training)
-- Do inference for large model
-- Plot RMSE for coeffs and maps
-- Fix colorbar ranges and colormap
+- Setup inference pipeline (as standalone script and after training) ✓
+- Do inference for large model ✓
+- Plot RMSE for coeffs and maps ✓
+- Fix colorbar ranges and colormap ✓
 
 Model improvements:
 	- Initialize positional encoding correctly
