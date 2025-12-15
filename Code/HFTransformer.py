@@ -9,16 +9,15 @@ from transformers import GPT2Config, GPT2Model
 
 class TransformerModel(LightningModule):
 
-	def __init__(self, 
-		T: int, 
-		L: int, 
-		D: int, 
-		H: int, 
-		R: int, 
-		PI: int, 
-		EPS: float, 
-		BETA: float, 
-		NORM_FIRST: bool, 
+	def __init__(self,
+		T: int,
+		L: int,
+		D: int,
+		H: int,
+		R: int,
+		PI: int,
+		EPS: float,
+		BETA: float,
 		DROPOUT_PROB: float):
 
 		super().__init__()
@@ -40,6 +39,7 @@ class TransformerModel(LightningModule):
 			)
 		self.transformer = GPT2Model(config)
 		self.head = GMMHead(D, PI, EPS, BETA)
+
 
 	def forward(self, input, cache=None):
 		"""
@@ -149,6 +149,7 @@ class TransformerModel(LightningModule):
 class GMMHead(nn.Module):
 
 	def __init__(self, D, PI, EPS, BETA):
+		super().__init__()
 		self.PI = PI,
 		self.EPS = EPS,
 		self.unembedding = nn.Linear(D, 5*PI)

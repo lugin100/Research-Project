@@ -1,5 +1,5 @@
 ############ Setup ###############
-RUN_NAME = "Large-model"
+RUN_NAME = "HF-Test"
 
 import torch
 from Functions import triangular_number
