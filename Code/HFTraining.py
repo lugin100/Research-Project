@@ -36,7 +36,7 @@ model = TransformerModel(**params)
 
 ############# Datasets ##############
 
-params["B"] = 4  # Training and eval batch size
+params["B"] = 32  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
@@ -117,7 +117,7 @@ checkpointing = ModelCheckpoint(
 ############# Execution #############
 
 trainer = Trainer(
-	fast_dev_run=True, 
+	fast_dev_run=False,
 	max_epochs=params["MAX_EPOCHS"], 
 	logger=wandb_logger,
 	log_every_n_steps=5,
