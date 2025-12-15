@@ -27,11 +27,11 @@ def plot_tensor_as_map(data, globe=False, show=True, save_name=None):
     data = data.cpu().numpy()
     if globe is False:
         plt.imshow(data, cmap = "turbo")
+        plt.colorbar()
     else:
-        plot_sphere(data, cmap = "turbo")
+        plot_sphere(data, cmap = "turbo", colorbar=True)
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
-    plt.colorbar()
     plot_io(show, save_name)
 
 def plot_coeffs_as_img(data, show=True, save_name=None):
