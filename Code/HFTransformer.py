@@ -37,7 +37,7 @@ class TransformerModel(LightningModule):
 			layer_norm_epsilon = EPS,
 			use_cache = True,
 			)
-		self.embedding = Embedding(D)
+		self.embedding = Embedding(D, T)
 		self.transformer = GPT2Model(config)
 		self.head = GMMHead(D, PI, EPS, BETA)
 
@@ -167,8 +167,8 @@ class GMMHead(nn.Module):
 
 	def __init__(self, D, PI, EPS, BETA):
 		super().__init__()
-		self.PI = PI,
-		self.EPS = EPS,
+		self.PI = PI
+		self.EPS = EPS
 		self.unembedding = nn.Linear(D, 5*PI)
 
 	def coerce_parameters(self, output):
