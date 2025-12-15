@@ -3,6 +3,7 @@ import torch
 from types import MethodType
 from HFTransformer import TransformerModel
 from lightning import Trainer
+from lightning.pytorch.callbacks import BasePredictionWriter
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Functions import (
@@ -38,33 +39,41 @@ dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 model_path = f"autoregressive-downcasting/{model_str}/checkpoints/best-model.ckpt"
 
 model = TransformerModel.load_from_checkpoint(model_path)
-trainer = Trainer(
-    accelerator="gpu",
-    devices="auto",  # Uses all available GPUs
-    strategy="ddp",  # Distributed Data Parallel
-)
+
 os.makedirs(os.path.dirname(DIR), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=True)
 
-def predict_step(self, batch, batch_idx):
-	print( batch_idx) # This index is just a lie when using DDP
-	print(batch.shape)
-	global_indices, data = batch
-	batch = torch.view_as_real(data[:,:L])
-	pred_batch = self.infer(batch)
-	rescaled_preds = torch.view_as_complex(pred_batch) * stds + means
-	reals = inv_sh_transform(unflatten_coeffs(rescaled_preds))
-
-	for batch_idx, global_idx in enumerate(global_indices):
-		torch.save(pred_batch[batch_idx],
-			f"{DIR}/coeffs/sample_{global_idx}.pt")
-		torch.save(reals[batch_idx],
-			f"{DIR}/reals/sample_{global_idx}.pt")
-
-model.predict_step = MethodType(predict_step, model)
-
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
 
-trainer.predict(model, dataloaders=dl)
+def predict_step(self, batch, batch_idx):
+	input = torch.view_as_real(batch[:,:L])
+	pred_batch = self.infer(input)
+	rescaled_preds = torch.view_as_complex(pred_batch) * stds + means
+	reals = inv_sh_transform(unflatten_coeffs(rescaled_preds))
+	return pred_batch, reals
+
+model.predict_step = MethodType(predict_step, model)
+
+class PredictionWriter(BasePredictionWriter):
+
+	def __init__(self):
+		super().__init__("batch")
+
+	def write_on_batch_end(self, trainer, model, predictions, batch_indices):
+		coeffs, reals = predictions
+		print(coeffs.shape)
+		print(reals.shape)
+		print(batch_indices)
+		#torch.save(coeffs, DIR + f"/coeffs/batch{batch_indices}.pt")
+		#torch.save(reals, DIR + f"/reals/batch{batch_indices}.pt")
+
+predWriter = PredictionWriter()
+trainer = Trainer(
+    devices="auto",
+    strategy="ddp",
+    callbacks=[predWriter]
+)
+
+trainer.predict(model, dataloaders=dl, return_predictions=False)
