@@ -36,8 +36,8 @@ model = TransformerModel(**params)
 
 ############# Datasets ##############
 
-params["B"] = 4  # Training and eval batch size
-size_limit = 0.1
+params["B"] = 32  # Training and eval batch size
+size_limit = 0.01
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
 ds = Subset(ds, range(int(size_limit * ds.__len__())))
@@ -119,7 +119,7 @@ checkpointing = ModelCheckpoint(
 ############# Execution #############
 
 trainer = Trainer(
-	fast_dev_run=True, 
+	fast_dev_run=False,
 	max_epochs=params["MAX_EPOCHS"], 
 	logger=wandb_logger,
 	log_every_n_steps=5,
