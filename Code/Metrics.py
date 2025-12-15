@@ -58,5 +58,9 @@ def pi_median(pis):
 	return pis.median(-1)[0].mean()
 
 
+def perplexity(pis):
+	return torch.mean(torch.prod((pis ** -pis), axis=-1))
+	
+
 def variance_median(variances):
 	return variances.median(-1)[0].median(-1)[0].mean()
