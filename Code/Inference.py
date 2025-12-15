@@ -14,12 +14,13 @@ from Functions import (
 
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
-model_str = "mitogrw5"
+model_str = "f0edygk8"
 DIR = f"Results/{model_str}/Predictions"
+L = triangular_number(61)
 
 # Load dataset
 data_path = "data/wind-speed_level-500_testset"
-testset = CoeffDataset(data_path)
+testset = CoeffDataset(data_path, index_limit=L)
 
 # Modify dataset such that it returns index too
 def __getitem__(self, idx):
@@ -29,7 +30,7 @@ def __getitem__(self, idx):
 		return idx, self.data[idx, :self.index_limit]
 testset.__getitem__ = MethodType(__getitem__, testset)
 
-B = 5
+B = 32
 dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 
@@ -42,8 +43,6 @@ trainer = Trainer(
     devices="auto",  # Uses all available GPUs
     strategy="ddp",  # Distributed Data Parallel
 )
-L = triangular_number(60)
-T = triangular_number(120)
 os.makedirs(os.path.dirname(DIR), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/coeffs"), exist_ok=True)
 os.makedirs(os.path.dirname(DIR + "/reals"), exist_ok=True)
@@ -59,14 +58,12 @@ def predict_step(self, batch, batch_idx):
 	for batch_idx, global_idx in enumerate(global_indices):
 		torch.save(pred_batch[batch_idx],
 			f"{DIR}/coeffs/sample_{global_idx}.pt")
-	torch.save(reals[batch_idx],
-		f"{DIR}/reals/sample_{global_idx}.pt")
-
+		torch.save(reals[batch_idx],
+			f"{DIR}/reals/sample_{global_idx}.pt")
 
 model.predict_step = MethodType(predict_step, model)
 
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
 stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T].to(DEVICE)
-print(means.shape)
 
 trainer.predict(model, dataloaders=dl)
