@@ -118,6 +118,33 @@ class TransformerModel(LightningModule):
 			x = samples.unsqueeze(1)
 
 
+	def sample_gmm(self, pis, means, variances):
+		"""
+		Sample from a GMM with the passed parameters.
+
+		Args:
+			pis: Mixture components of shape (..., PI)
+			means: Means of mixture components of shape (..., PI, 2)
+			variances: Variances of mixture components of shape (..., PI, 2)
+		Returns:
+			Samples from (batch) of GMMs of shape (..., 2)
+		"""
+		*batch_dims, components = pis.shape
+		assert components == self.PI
+		pis = pis.reshape(-1, self.PI)
+		means = means.reshape(-1, self.PI, 2)
+		variances = variances.reshape(-1, self.PI, 2)
+
+		chosen_components = torch.multinomial(pis, 1)
+		chosen_components = chosen_components.unsqueeze(-1).expand(-1,1,2)
+
+		selected_means = torch.gather(means, 1, chosen_components).squeeze(1)
+		selected_variances = torch.gather(variances, 1, chosen_components).squeeze(1)
+
+		unit_samples = torch.randn_like(selected_means)
+		samples = unit_samples * torch.sqrt(selected_variances) + selected_means
+		return samples.reshape(*batch_dims, 2)
+
 
 class GMMHead(nn.Module):
 

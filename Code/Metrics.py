@@ -27,7 +27,7 @@ def beta_nll(pis, means, variances, targets, beta=0, average=True):
 	  	beta: Beta hyperparameter. 0 (default) equals no beta-correction, i.e. normal nll loss
 	  	average: Whether to average over leading axes
 	Returns:
-	loss: Loss of targets given the mixture model, averaged over leading axes if average=True
+		Loss of targets given the mixture model, averaged over leading axes if average=True
 	"""
 	targets = targets.unsqueeze(-2) # (..., 1, 2) to broadcast over components
 	# Compute nll for each component and dimension
