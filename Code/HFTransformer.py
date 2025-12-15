@@ -37,6 +37,7 @@ class TransformerModel(LightningModule):
 			layer_norm_epsilon = EPS,
 			use_cache = True,
 			)
+		self.embedding = Embedding(D)
 		self.transformer = GPT2Model(config)
 		self.head = GMMHead(D, PI, EPS, BETA)
 
@@ -53,8 +54,10 @@ class TransformerModel(LightningModule):
 		"""
 		use_cache = cache is not None
 		cache = None if cache == -1 else cache
+
+		embedding = self.embedding(input)
 		output = self.transformer(
-			inputs_embeds = input,
+			inputs_embeds = embedding,
 			past = cache,
 			use_cache = use_cache,
 			)
@@ -144,6 +147,20 @@ class TransformerModel(LightningModule):
 		unit_samples = torch.randn_like(selected_means)
 		samples = unit_samples * torch.sqrt(selected_variances) + selected_means
 		return samples.reshape(*batch_dims, 2)
+
+
+class Embedding(nn.Module):
+
+	def __init__(self, D, T):
+		super().__init__()
+		self.projection = nn.Linear(2, D)
+		initial_position_codes = nn.init.trunc_normal_(torch.zeros((1,T,D)), std=0.02)
+		self.positional_encoding = nn.Parameter(initial_position_codes)
+
+
+	def forward(self, input):
+		hiddens = self.projection(input)
+		return hiddens + self.positional_encoding
 
 
 class GMMHead(nn.Module):
