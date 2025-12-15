@@ -3,6 +3,7 @@ from matplotlib.colors import LogNorm
 import xarray as xr
 import torch
 import numpy as np
+from torch_harmonics.plotting import plot_sphere
 
 plt.rcParams.update({'font.size': 16})
 
@@ -21,10 +22,13 @@ def plot_xarray_as_map(data, show=True, save_name=None):
     data.transpose().plot()
     plot_io(show, save_name)
 
-def plot_tensor_as_map(data, show=True, save_name=None):
+def plot_tensor_as_map(data, globe=False, show=True, save_name=None):
     assert isinstance(data, torch.Tensor)
     data = data.cpu().numpy()
-    plt.imshow(data)
+    if globe is False:
+        plt.imshow(data, cmap = "turbo")
+    else:
+        plot_sphere(data, cmap = "turbo")
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
     plt.colorbar()
