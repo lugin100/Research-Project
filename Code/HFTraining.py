@@ -7,7 +7,7 @@ from HFTransformer import TransformerModel
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 from Dataset import CoeffDataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from types import MethodType
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
@@ -37,8 +37,10 @@ model = TransformerModel(**params)
 ############# Datasets ##############
 
 params["B"] = 4  # Training and eval batch size
+size_limit = 0.1
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
+ds = Subset(ds, range(int(size_limit * ds.__len__())))
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
 
 ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=params["T"])
