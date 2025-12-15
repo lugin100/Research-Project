@@ -89,18 +89,18 @@ class TransformerModel(LightningModule):
 		pis, means, variances = params
 		loss = self.beta_nll_loss(*params, batch)
 		pi_log = Metrics.pi_median(pis)
-		mse_log = Metrics.mean_squared_error(means, torch.zeros_like(means))
+		rmse_log = Metrics.RMSE(means, torch.zeros_like(means), feature_dims=-1)
 		variance_log = Metrics.variance_median(variances)
-		self.logs.append({"pi_log": pi_log, "mse_log": mse_log, "variance_log": variance_log, "loss_log": loss})
+		self.logs.append({"pi_log": pi_log, "rmse_log": rmse_log, "variance_log": variance_log, "loss_log": loss})
 
 
 	def on_validation_epoch_end(self):
 		pi_log = torch.stack([x["pi_log"] for x in self.logs]).mean()
-		mse_log = torch.stack([x["mse_log"] for x in self.logs]).mean()
+		rmse_log = torch.stack([x["rmse_log"] for x in self.logs]).mean()
 		variance_log = torch.stack([x["variance_log"] for x in self.logs]).mean()
 		loss_log = torch.stack([x["loss_log"] for x in self.logs]).mean()
 		self.log("val/PI Median", pi_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
-		self.log("val/MSE", mse_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
+		self.log("val/RMSE", rmse_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
 		self.log("val/Variance Median", variance_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
 		self.log("val/NLL Loss", loss_log, prog_bar=True, logger=True, on_epoch=True, add_dataloader_idx=False, sync_dist=True)
 		self.logs.clear()
