@@ -1,38 +1,40 @@
-## Transformer Model Training Configuation ##
-
+############ Setup ###############
 RUN_NAME = "Large-model"
 
-############ Setup ###############
-import math
 import torch
+from Functions import triangular_number
+from HFTransformer import TransformerModel
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
+
+from Dataset import CoeffDataset
+from torch.utils.data import DataLoader
+
+from types import MethodType
+from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
+from lightning import Trainer
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.loggers import WandbLogger
 
 ############ Model ###############
 
-from Functions import triangular_number
-from Transformer import LightningModel
-
-
 params = {
-	"N": 121,			# Maximal coefficient degree in training
-	"PI": 8,  			# Number of predicted mixture components
-	"EPS": 1e-5, 		# Clamping constant for variance of predicted distriutions
-	"D": 512,  			# Embedding dimension
-	"H": 8,  			# Number of heads in multi-head attention
-	"R": 4, 			# Number of sequential transformer blocks
-	"NORM_FIRST": True, # Whether to apply layer norm first or after attention and feedforward
-	"BETA": 0.5 		# Parameter for beta-corrected NLL loss
+	#"N": 121,					# Maximal coefficient degree in training
+	"L": triangular_number(61), # Number of input coefficients
+	"T": triangular_number(121),# Number of output coefficients
+	"D": 512,  					# Embedding dimension
+	"H": 8,  					# Number of heads in multi-head attention
+	"R": 4, 					# Number of sequential transformer blocks
+	"PI": 8,  					# Number of predicted mixture components
+	"EPS": 1e-5, 				# Clamping constant for variance of predicted distriution
+	#"NORM_FIRST": True, 		# Whether to apply layer norm first or after attention and feedforward
+	"BETA": 0.5, 				# Parameter for beta-corrected NLL loss
+	"DROPOUT_PROB": 0.1			# Dropout probability for training
 }
 
-params["T"] = triangular_number(params["N"]) # Number of coefficients given in training
-params["L"] = triangular_number(math.ceil(params["N"]/2)) # Number of coefficients given in inference
-
-model = LightningModel(**params)
+model = TransformerModel(**params)
 
 
 ############# Datasets ##############
-from Dataset import CoeffDataset
-from torch.utils.data import DataLoader
 
 params["B"] = 4  # Training and eval batch size
 
@@ -44,14 +46,12 @@ validloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=Fals
 
 
 ############# Optimizer #############
-from types import MethodType
-from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
 params.update({
 	"BASE_LR": 5e-5,	 		# Base Learning Rate
 	"LR_START_FACTOR": 1e-8,	# LR factor for first warmup step
-    "MAX_EPOCHS": 50,    		# Maximal number of training epochs
-    "WARMUP_DURATION": 0.15, 	# Fraction of epochs until warmup completion
+    "MAX_EPOCHS": 30,    		# Maximal number of training epochs
+    "WARMUP_DURATION": 0.05, 	# Fraction of epochs until warmup completion
 	"MIN_LR": 1e-7				# Learning rate at last cosine step
 	})
 
@@ -93,10 +93,6 @@ def on_before_optimizer_step(self, optimizer):
 model.on_before_optimizer_step = MethodType(on_before_optimizer_step, model)
 
 
-############# Execution #############
-from lightning import Trainer
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
-
 params["EARLY_STOPPING_PATIENCE"] = 5
 early_stop = EarlyStopping(
 	monitor="val/NLL Loss",
@@ -106,6 +102,11 @@ early_stop = EarlyStopping(
 	verbose=True
 	)
 
+############# Logging ###############
+
+wandb_logger = WandbLogger(project="autoregressive-downcasting", name=RUN_NAME, log_model="all")
+wandb_logger.experiment.config.update(params)
+
 checkpointing = ModelCheckpoint(
     monitor="val/NLL Loss",
     mode="min",
@@ -113,20 +114,14 @@ checkpointing = ModelCheckpoint(
     filename="best-model",
 	)
 
+############# Execution #############
+
 trainer = Trainer(
-	fast_dev_run=False, 
+	fast_dev_run=True, 
 	max_epochs=params["MAX_EPOCHS"], 
 	logger=wandb_logger,
-	log_every_n_steps=1,
+	log_every_n_steps=5,
 	callbacks=[early_stop, checkpointing]
 	)
 
-############# Logging ###############
-from lightning.pytorch.loggers import WandbLogger
-
-wandb_logger = WandbLogger(project="autoregressive-downcasting", name=RUN_NAME, log_model="all")
-wandb_logger.experiment.config.update(params)
-
-
 trainer.fit(model, trainloader, validloader)
-
