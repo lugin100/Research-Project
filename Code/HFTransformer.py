@@ -42,7 +42,7 @@ class TransformerModel(LightningModule):
 		self.head = GMMHead(D, PI, EPS, BETA)
 
 
-	def forward(self, input, cache=None):
+	def forward(self, input, position_indices=None, cache=None):
 		"""
 		Model forward pass. 
 
@@ -50,12 +50,14 @@ class TransformerModel(LightningModule):
 		and returns just the foward pass result.
 		If cache=-1, returns forward pass and its cache.
 		Else: Passes cache argument to be used as cache and returns 
-		forward pass and new cache
+		forward pass and new cache.
+		position_indices is a list of indices of input in the sequence.
+		If positon_indices=None, assumes torch.arange(T).
 		"""
 		use_cache = cache is not None
 		cache = None if cache == -1 else cache
 
-		embedding = self.embedding(input)
+		embedding = self.embedding(input, position_indices)
 		output = self.transformer(
 			inputs_embeds = embedding,
 			past = cache,
@@ -110,15 +112,30 @@ class TransformerModel(LightningModule):
 
 
 	def infer(self, input):
-		# input.shape # (B, L, 2)
+		"""
+		Autoregressively predict samples from L to T.
+	
+		Args:
+			input: Input sequence of shape (B,L,2).
+		Returns:
+			Output samples of shape (B,T,2)
+		"""
 		output = torch.zeros((input.shape[0], self.T, 2), device=DEVICE)
 		output[:,:self.L,:] = input
-		# Compute cache over input sequence
-		cache = -1
-		x = input
+		# precompute cache for input sequence
+		params, cache = self.forward(
+			input,
+			position_indices=enumerate(self.L),
+			cache = -1)
+		x = input[:,-1:,:]
+		print(x.shape) # Is this (B,1,2), i.e. keeps sequence dim?
 		for index in range(self.L, self.T):
-			params, cache = self.forward(x, cache)
-			params = [var[:,-1,...] for var in params]
+
+			params, cache = self.forward(
+				x,
+				position_indices=[index], 
+				cache=cache)
+
 			samples = self.sample_gmm(*params)
 			output[:,index,:] = samples
 			x = samples.unsqueeze(1)
@@ -157,12 +174,16 @@ class Embedding(nn.Module):
 	def __init__(self, D, T):
 		super().__init__()
 		self.projection = nn.Linear(2, D)
-		initial_position_codes = nn.init.trunc_normal_(torch.zeros((1,T,D)), std=0.02)
-		self.positional_encoding = nn.Parameter(initial_position_codes)
+		self.positional_encoding = nn.Embedding(T, D)
+		self.positional_encoding.weight = nn.init.trunc_normal_(self.positional_encoding.weight, std=0.02)
+		self.default_indices = torch.arange(T, device=DEVICE)
 
-
-	def forward(self, input):
+	def forward(self, input, position_indices):
 		hiddens = self.projection(input)
+		if position_indices is None:
+			position_indices = self.default_indices
+		assert len(position_indices) == input.shape[1]
+		position_indices = torch.tensor(position_indices, dtype=int).unsqueeze(0)
 		return hiddens + self.positional_encoding
 
 
