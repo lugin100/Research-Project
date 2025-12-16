@@ -37,13 +37,14 @@ Overview over ToDos for Research Projects
 - Plot RMSE for coeffs and maps ✓
 - Fix colorbar ranges and colormap ✓
 
-- Fill out research project registration form
+- Fill out research project registration form ✓
 - Calculate ACC Score
 - Evaluate perplexity of categorical PIs ✓
 - Draw a few samples, push forward through inv sh and do rank histogram (https://confluence.ecmwf.int/display/FUG/Section+12.B+Statistical+Concepts+-+Probabilistic+Data#Section12.BStatisticalConceptsProbabilisticData-RankHistogram(TalagrandDiagram))
+
 - Find out cause of north pole artifact:
-	- Does it appear in random model with N=120?
-	- How did forecast net get rid of it?
+	- Does it appear in random model with N=120? No
+	- How did forecast net get rid of it?	
 	- Does it appear in new model?
 
 
