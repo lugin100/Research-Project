@@ -16,17 +16,16 @@ from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 
 ############ Model ###############
-
+L = 61 # Maximal input coefficient degree
+N = 121 # Maximal output coefficient degree
 params = {
-	#"N": 121,					# Maximal coefficient degree in training
-	"L": triangular_number(61), # Number of input coefficients
-	"T": triangular_number(121),# Number of output coefficients
+	"L": triangular_number(L),  # Number of input coefficients
+	"T": triangular_number(N),  # Number of output coefficients
 	"D": 512,  					# Embedding dimension
 	"H": 8,  					# Number of heads in multi-head attention
 	"R": 4, 					# Number of sequential transformer blocks
 	"PI": 8,  					# Number of predicted mixture components
-	"EPS": 1e-5, 				# Clamping constant for variance of predicted distriution
-	#"NORM_FIRST": True, 		# Whether to apply layer norm first or after attention and feedforward
+	"EPS": 1e-5, 				# Clamping constant for variance of predicted distribution
 	"BETA": 0.5, 				# Parameter for beta-corrected NLL loss
 	"DROPOUT_PROB": 0.1			# Dropout probability for training
 }
@@ -37,23 +36,21 @@ model = TransformerModel(**params)
 ############# Datasets ##############
 
 params["B"] = 32  # Training and eval batch size
-size_limit = 0.01
 
-ds = CoeffDataset("data/wind-speed_level-500_trainset", index_limit=params["T"])
-ds = Subset(ds, range(int(size_limit * ds.__len__())))
-trainloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=True)
+ds = CoeffDataset("data/wind-speed_level-500_trainset")
+trainloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
 
-ds = CoeffDataset("data/wind-speed_level-500_testset", index_limit=params["T"])
-validloader = DataLoader(ds, batch_size=params["B"], num_workers=7, shuffle=False) # No need to shuffle testset
+ds = CoeffDataset("data/wind-speed_level-500_validationset")
+testloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
 
 
 ############# Optimizer #############
 
 params.update({
 	"BASE_LR": 5e-5,	 		# Base Learning Rate
-	"LR_START_FACTOR": 1e-8,	# LR factor for first warmup step
+	"LR_START_FACTOR": 1e-7,	# LR factor for first warmup step
     "MAX_EPOCHS": 30,    		# Maximal number of training epochs
-    "WARMUP_DURATION": 0.05, 	# Fraction of epochs until warmup completion
+    "WARMUP_DURATION": 1./30., 	# Fraction of epochs until warmup completion
 	"MIN_LR": 1e-7				# Learning rate at last cosine step
 	})
 
@@ -95,7 +92,7 @@ def on_before_optimizer_step(self, optimizer):
 model.on_before_optimizer_step = MethodType(on_before_optimizer_step, model)
 
 
-params["EARLY_STOPPING_PATIENCE"] = 5
+params["EARLY_STOPPING_PATIENCE"] = 10
 early_stop = EarlyStopping(
 	monitor="val/NLL Loss",
 	mode="min",
@@ -123,7 +120,8 @@ trainer = Trainer(
 	max_epochs=params["MAX_EPOCHS"], 
 	logger=wandb_logger,
 	log_every_n_steps=5,
-	callbacks=[early_stop, checkpointing]
+	callbacks=[early_stop, checkpointing],
+	val_ceck_interval=0.25, # Run validation more often
 	)
 
 trainer.fit(model, trainloader, validloader)
