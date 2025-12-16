@@ -15,7 +15,7 @@ from Functions import (
 
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
-model_str = "f0edygk8"
+model_str = "vyqxgt8z"
 DIR = f"Results/{model_str}/Predictions"
 L = triangular_number(61)
 T = triangular_number(121)
@@ -61,13 +61,10 @@ class PredictionWriter(BasePredictionWriter):
 	def __init__(self):
 		super().__init__("batch")
 
-	def write_on_batch_end(self, trainer, model, predictions, batch_indices):
+	def write_on_batch_end(self, trainer, model, predictions, batch_indices, batch, batch_idx, dataloader_idx):
 		coeffs, reals = predictions
-		print(coeffs.shape)
-		print(reals.shape)
-		print(batch_indices)
-		#torch.save(coeffs, DIR + f"/coeffs/batch{batch_indices}.pt")
-		#torch.save(reals, DIR + f"/reals/batch{batch_indices}.pt")
+		torch.save(coeffs, DIR + f"/coeffs/batch{batch_indices}.pt")
+		torch.save(reals, DIR + f"/reals/batch{batch_indices}.pt")
 
 predWriter = PredictionWriter()
 trainer = Trainer(
