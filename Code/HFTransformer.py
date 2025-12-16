@@ -24,6 +24,7 @@ class TransformerModel(LightningModule):
 		self.save_hyperparameters()
 		self.T = T
 		self.L = L
+		self.PI = PI
 		self.BETA = BETA
 		self.logs = []
 		config = GPT2Config(
@@ -44,7 +45,7 @@ class TransformerModel(LightningModule):
 
 	def forward(self, input, position_indices=None, cache=None):
 		"""
-		Model forward pass. 
+		Model forward pass.
 
 		If cache=None (default), does not use caching
 		and returns just the foward pass result.
@@ -64,12 +65,12 @@ class TransformerModel(LightningModule):
 			use_cache = use_cache,
 			)
 		hiddens = output.last_hidden_state
-		output = self.head(hiddens)
+		params = self.head(hiddens)
 		if not use_cache:
-			return output
+			return params
 		else:
-			cache = output.past
-		return output, cache
+			cache = output.past_key_values
+		return params, cache
 
 
 	def beta_nll_loss(self, pis, means, variances, targets):
@@ -114,7 +115,7 @@ class TransformerModel(LightningModule):
 	def infer(self, input):
 		"""
 		Autoregressively predict samples from L to T.
-	
+
 		Args:
 			input: Input sequence of shape (B,L,2).
 		Returns:
@@ -125,20 +126,20 @@ class TransformerModel(LightningModule):
 		# precompute cache for input sequence
 		params, cache = self.forward(
 			input,
-			position_indices=enumerate(self.L),
+			position_indices=list(range(self.L)),
 			cache = -1)
 		x = input[:,-1:,:]
-		print(x.shape) # Is this (B,1,2), i.e. keeps sequence dim?
 		for index in range(self.L, self.T):
 
 			params, cache = self.forward(
 				x,
-				position_indices=[index], 
+				position_indices=[index],
 				cache=cache)
 
-			samples = self.sample_gmm(*params)
+			samples = self.sample_gmm(*params).squeeze(1)
 			output[:,index,:] = samples
 			x = samples.unsqueeze(1)
+		return output
 
 
 	def sample_gmm(self, pis, means, variances):
@@ -183,8 +184,8 @@ class Embedding(nn.Module):
 		if position_indices is None:
 			position_indices = self.default_indices
 		assert len(position_indices) == input.shape[1]
-		position_indices = torch.tensor(position_indices, dtype=int).unsqueeze(0)
-		return hiddens + self.positional_encoding
+		position_indices = torch.tensor(position_indices, dtype=int, device=DEVICE).unsqueeze(0)
+		return hiddens + self.positional_encoding(position_indices)
 
 
 class GMMHead(nn.Module):
