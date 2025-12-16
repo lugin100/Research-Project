@@ -1,9 +1,9 @@
 ############ Setup ###############
-RUN_NAME = "HF-Test"
+RUN_NAME = "V1"
 
 import torch
 from Functions import triangular_number
-from HFTransformer import TransformerModel
+from Transformer import TransformerModel
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 from Dataset import CoeffDataset
@@ -41,7 +41,7 @@ ds = CoeffDataset("data/wind-speed_level-500_trainset")
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
 
 ds = CoeffDataset("data/wind-speed_level-500_validationset")
-validationloader = DataLoader(ds, batch_size=2*params["B"], num_workers=8, shuffle=True)
+validationloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
 
 
 ############# Optimizer #############
@@ -121,7 +121,7 @@ trainer = Trainer(
 	logger=wandb_logger,
 	log_every_n_steps=5,
 	callbacks=[early_stop, checkpointing],
-	val_ceck_interval=0.25, # Run validation more often
+	val_check_interval=0.25, # Run validation more often
 	)
 
 trainer.fit(model, trainloader, validationloader)
