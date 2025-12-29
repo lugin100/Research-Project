@@ -94,8 +94,9 @@ class TransformerModel(LightningModule):
 		loss = self.beta_nll_loss(*params, batch)
 		pi_log = Metrics.pi_median(pis)
 		pp_log = Metrics.perplexity(pis)
+		weighted_means = (pis[...,None] * means).sum(axis=-2)
 		rmse_log = Metrics.RMSE(means, torch.zeros_like(means), feature_dims=-1)
-		true_rmse_log = Metrics.RMSE(means, batch, feature_dims=-1)
+		true_rmse_log = Metrics.RMSE(weighted_means, batch, feature_dims=-1)
 		variance_log = Metrics.variance_median(variances)
 		self.logs.append({"pi_log": pi_log, "pp_log": pp_log, "rmse_log": rmse_log, "true_rmse_log": true_rmse_log, "variance_log": variance_log, "loss_log": loss})
 
