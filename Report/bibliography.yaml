@@ -143,7 +143,33 @@ downscaling-normalizing-flow:
             isbn: 9781450388481
             date: 2021
 
-Beta-NLL:
+data:
+      type: misc
+      title: ERA5 hourly data on pressure levels from 1940 to present. Copernicus Climate Change Service (C3S) Climate Data Store (CDS)
+      author: ["Hersbach, H.", "Bell, B.", "Berrisford, P.", "Biavati, G.", "Horányi, A.", "Muñoz Sabater, J.", "Nicolas, J.", "Peubey, C.", "Radu, R.", "Rozum, I.", "Schepers, D.", "Simmons, A.", "Soci, C.", "Dee, D.", "Thépaut, J-N."]
+      date: 2023
+      serial-number:
+            doi: 10.24381/cds.bd0915c6
+      note: Accessed on 26-12-2025
+
+torch-harmonics:
+      type: misc
+      title: "Spherical Fourier Neural Operators: Learning Stable Dynamics on the Sphere"
+      author: [Boris Bonev, Thorsten Kurth, Christian Hundt, Jaideep Pathak, Maximilian Baust, Karthik Kashinath, Anima Anandkumar]
+      year: 2023
+      serial-number:
+            doi: https://doi.org/10.48550/arXiv.2306.03838
+
+
+GMM-Transformer:
+      type: article
+      title: "GIVT: Generative Infinite-Vocabulary Transformers"
+      author: ["Michael Tschannen", "Cian Eastwood", "Fabian Mentzer"]
+      date: 2023
+      serial-number:
+            doi: https://doi.org/10.48550/arXiv.2312.02116
+
+beta-NLL:
       type: proceedings
       title: On the Pitfalls of Heteroscedastic Uncertainty Estimation with Probabilistic Neural Networks
       author: [Maximilian Seitzer, Arash Tavakoli, Dimitrije Antic, Georg Martius]
@@ -151,3 +177,26 @@ Beta-NLL:
       url: https://openreview.net/forum?id=aPOpXlnV1T
       parent: 
             title: International Conference on Learning Representations
+
+diffusion-transformer: 
+      type: article
+      title: "Scalable Diffusion Models with Transformers"
+      author: ["William Peebles", "Sining Xie"]
+      date: 2022
+      serial-number:
+            doi: https://doi.org/10.48550/arXiv.2212.09748
+
+attention:
+      type: proceedings
+      title: "Attention is all you need"
+      author: ["Vaswani, Ashish", "Shazeer, Noam", "Parmar, Niki", "Uszkoreit, Jakob", "Jones, Llion", "Gomez, Aidan N.", "Kaiser, \L{}ukasz", "Polosukhin, Illia"]
+      year: 2017
+      page-range: 6000-6010
+      parent:
+            type: periodical
+            title: Proceedings of the 31st International Conference on Neural Information Processing Systems
+            publisher: Curran Associates Inc.
+            date: 2017
+            volume: 14
+            issn: 9781510860964
+
