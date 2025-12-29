@@ -101,7 +101,7 @@ In order to do so, the model has a head which coerces the hidden state for a seq
  - GMM component means
  - isotropic GMM component variances using the softplus and thresholding to $10^(-5)$
  analogous to @GMM-Transformer. The number of GMM components is fixed at eight.
- During inference, the predicted distribution parameters are used to sample a sequence element. During training, the negatve log likelihood (NLL) of the true sequence elements under the distribution parameterized by the network is used as a loss function. To prevent common pitfalls in training of parameter estimation with NLL, $beta$-NLL is employed with a parameter of $beta = 0.5$. @beta-NLL
+ During inference, the predicted distribution parameters are used to sample a sequence element. During training, the negatve log likelihood (NLL) of the true sequence elements under the distribution parameterized by the network is used as a loss function. To prevent common pitfalls in training of parameter estimation with NLL, $beta$-corrected NLL is employed as loss function $beta = 0.5$. @beta-NLL
 
 == Transformer Model
 A standard decoder-only transformer model is used with a hidden dimension of 512 and four sequential transformer blocks with eight attention heads each. The learning rate follows a cosine annealing decay after a linear warmup of one epoch with a maximum of $5 times 10^(-5)$. For regularization, early stopping on the NLL loss of the validation step and dropout with probability $10%$ is used. 
@@ -114,11 +114,11 @@ These details follow @diffusion-transformer and @attention along with some manua
 #subpar.grid(
   figure(image("Figures/Ground-Truth_Sample.pdf", width: 105%), caption: [Ground truth sample]), <a>,
   figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <b>,
+  figure(image("Figures/Colorbar.pdf", width: 100%)),
   figure(image("Figures/Prediction_Sample.pdf", width: 100%), caption: [Model output]), <c>,
   figure(image("Figures/Prediction-Difference_Sample.pdf"), caption: [Difference between @a and @c]), <d>,
-  figure(image("Figures/Colorbar.pdf", width: 100%)),
   columns: (4fr, 4fr, 0.5fr),
-  rows: (1fr, 1fr),
+  rows: (50%, 50%),
   caption: [Ground truth (@a) and inference model input (@b) from the first sample of the testset.],
   label: <sample-visualizations>,
 )
