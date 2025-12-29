@@ -60,10 +60,13 @@ Tübingen AI Center, Eberhard-Karls-Universität Tübingen]
 )
 
 #set heading(
-  numbering: "1."
+  numbering: "1.",
 )
 
-#outline(title: "Outline")
+// Reduce spcing below headings
+#show heading: set block(below: 0.5em)
+
+#outline(title: "Outline", depth: 1)
 
 #heading("Introduction")
 Climate change affects humanity not only through global and long time-scale effects such as loss of land due to rising sea levels @Climate-Change-Effects-1 and hotter summers @Climate-Change-Effects-2, but also through more local phenomena including but not limited to growing frequency of heat waves and extreme precipitation events as well as more extreme cyclones @Climate-Change-Effects-3 @Climate-Change-Effects-4. While these changes can already be observed, it is paramount for informed policy-making to forecast the frequency and severity of these extreme weather events. Earth system model simulations enable long time forecasting of environment variables under climate change, however, due to their computational complexity, are limited to spatial resolutions of typically 100-300 kilometers @Overview-ESMs.
