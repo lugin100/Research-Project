@@ -35,7 +35,7 @@ if not os.path.exists(ground_truth_path):
 
 	# Plot single datapoint as example
 
-	plot_tensor_as_map(ground_truth, save_name=ground_truth_path + "Ground-Truth")
+	plot_tensor_as_map(ground_truth, save_name=ground_truth_path + "Ground-Truth", vmin=0, vmax=70)
 
 	# Transform to coefficients
 	single_datapoint_coeffs = flatten_coeffs(sh_transform(ground_truth[None,...]))
@@ -44,12 +44,12 @@ if not os.path.exists(ground_truth_path):
 	# Plot training model input (coefficients zeroed after L)
 	single_datapoint_coeffs[:,L:] = 0
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
-	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Training-model-input")
+	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Training-model-input", vmin=0, vmax=70)
 
 	# Plot inference model input (only coefficients up to L)
 	single_datapoint_coeffs = single_datapoint_coeffs[:,:L]
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
-	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Inference-model-input")
+	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Inference-model-input", vmin=0, vmax=70)
 
 
 # Load prediction
