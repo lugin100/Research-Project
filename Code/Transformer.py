@@ -41,7 +41,7 @@ class TransformerModel(LightningModule):
 		self.embedding = Embedding(D, T)
 		self.transformer = GPT2Model(config)
 		self.head = GMMHead(D, PI, EPS, BETA)
-		self.transformer.wte.requires_grad_(False) # disable tokenization parameters
+		self.transformer.wte = None # remove tokenization parameters
 
 
 	def forward(self, input, position_indices=None, cache=None):
