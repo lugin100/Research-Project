@@ -1,5 +1,6 @@
 #set document(title: [Climate Downscaling via spectral Autoregressive Transformer Modelling])
 
+#import "@preview/subpar:0.2.2"
 
 #set text(
   size: 12pt,
@@ -108,6 +109,19 @@ These details follow @diffusion-transformer and @attention along with some manua
 
 
 = Results <results>
+
+
+#subpar.grid(
+  figure(image("Figures/Ground-Truth_Sample.pdf", width: 105%), caption: [Ground truth sample]), <a>,
+  figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <b>,
+  figure(image("Figures/Prediction_Sample.pdf", width: 100%), caption: [Model output]), <c>,
+  figure(image("Figures/Prediction-Difference_Sample.pdf"), caption: [Difference between @a and @c]), <d>,
+  figure(image("Figures/Colorbar.pdf", width: 100%)),
+  columns: (4fr, 4fr, 0.5fr),
+  rows: (1fr, 1fr),
+  caption: [Ground truth (@a) and inference model input (@b) from the first sample of the testset.],
+  label: <sample-visualizations>,
+)
 
 = Conclusion <conclusion>
 
