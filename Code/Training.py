@@ -108,7 +108,7 @@ wandb_logger.experiment.config.update(params)
 checkpointing = ModelCheckpoint(
     monitor="val/NLL Loss",
     mode="min",
-    save_top_k=1,
+    save_top_k=10,
     filename="best-model",
 	)
 
