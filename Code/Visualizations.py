@@ -56,8 +56,8 @@ if not os.path.exists(ground_truth_path):
 batch = torch.load(model_path + "Predictions/reals/batch_0.pt", weights_only=True)
 first_sample = batch[0].cpu()
 
-lower_halve = first_sample[61:,:]
-plot_tensor_as_map(first_sample, save_name=model_path + "model-output")
+lower_half = first_sample[61:,:]
+plot_tensor_as_map(lower_half, save_name=model_path + "model-output")
 
 diff = (first_sample - gt_reals)[61:,:]
 plot_tensor_as_map(diff, save_name=model_path + "ground-truth-difference")
