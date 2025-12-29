@@ -1,7 +1,7 @@
 import os
 import torch
 from types import MethodType
-from HFTransformer import TransformerModel
+from Transformer import TransformerModel
 from lightning import Trainer
 from lightning.pytorch.callbacks import BasePredictionWriter
 from Dataset import CoeffDataset
@@ -15,7 +15,7 @@ from Functions import (
 
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
-model_str = "vyqxgt8z"
+model_str = "qlh2sfgf"
 DIR = f"Results/{model_str}/Predictions"
 L = triangular_number(61)
 T = triangular_number(121)
@@ -31,7 +31,7 @@ def __getitem__(self, idx):
 		return torch.tensor(idx), self.data[idx, :self.index_limit]
 testset.__getitem__ = MethodType(__getitem__, testset)
 
-B = 32
+B = 64
 dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 
@@ -63,8 +63,8 @@ class PredictionWriter(BasePredictionWriter):
 
 	def write_on_batch_end(self, trainer, model, predictions, batch_indices, batch, batch_idx, dataloader_idx):
 		coeffs, reals = predictions
-		torch.save(coeffs, DIR + f"/coeffs/batch{batch_indices}.pt")
-		torch.save(reals, DIR + f"/reals/batch{batch_indices}.pt")
+		torch.save(coeffs, DIR + f"/coeffs/batch_{batch_idx}.pt")
+		torch.save(reals, DIR + f"/reals/batch_{batch_idx}.pt")
 
 predWriter = PredictionWriter()
 trainer = Trainer(
