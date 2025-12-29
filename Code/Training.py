@@ -41,7 +41,7 @@ ds = CoeffDataset("data/wind-speed_level-500_trainset")
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
 
 ds = CoeffDataset("data/wind-speed_level-500_validationset")
-validationloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
+validationloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=False)
 
 
 ############# Optimizer #############
@@ -117,7 +117,7 @@ checkpointing = ModelCheckpoint(
 
 trainer = Trainer(
 	fast_dev_run=False,
-	max_epochs=params["MAX_EPOCHS"], 
+	max_epochs=params["MAX_EPOCHS"],
 	logger=wandb_logger,
 	log_every_n_steps=5,
 	callbacks=[early_stop, checkpointing],
