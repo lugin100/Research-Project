@@ -40,7 +40,7 @@ if not os.path.exists(ground_truth_path):
 	# Transform to coefficients
 	single_datapoint_coeffs = flatten_coeffs(sh_transform(ground_truth[None,...]))
 
-	L = triangular_number(60)
+	L = triangular_number(61)
 	# Plot training model input (coefficients zeroed after L)
 	single_datapoint_coeffs[:,L:] = 0
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
