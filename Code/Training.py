@@ -49,22 +49,21 @@ validationloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle
 params.update({
 	"BASE_LR": 5e-5,	 		# Base Learning Rate
 	"LR_START_FACTOR": 1e-7,	# LR factor for first warmup step
-    "MAX_EPOCHS": 30,    		# Maximal number of training epochs
-    "WARMUP_DURATION": 1./30., 	# Fraction of epochs until warmup completion
+    "MAX_EPOCHS": 20,    		# Maximal number of training epochs
+    "WARMUP_STEPS": 200, 	    # Number of steps until warmup completion
 	"MIN_LR": 1e-7				# Learning rate at last cosine step
 	})
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=params["BASE_LR"])
 
 total_steps =  params["MAX_EPOCHS"] * len(trainloader)
-warmup_steps = int(params["WARMUP_DURATION"] * total_steps)
-cosine_steps = total_steps - warmup_steps
+cosine_steps = total_steps - params["WARMUP_STEPS"]
 
 warmup_schedule = LinearLR(
 	optimizer,
 	start_factor=params["LR_START_FACTOR"],
 	end_factor=1,
-	total_iters=warmup_steps)
+	total_iters=params["WARMUP_STEPS"])
 cosine_schedule = CosineAnnealingLR(
 	optimizer,
 	T_max=cosine_steps,
@@ -73,7 +72,7 @@ cosine_schedule = CosineAnnealingLR(
 scheduler = SequentialLR(
             optimizer,
             schedulers=[warmup_schedule, cosine_schedule],
-            milestones=[warmup_steps]
+            milestones=[params["WARMUP_STEPS"]]
         )
 
 def configure_optimizers(self):
@@ -92,7 +91,7 @@ def on_before_optimizer_step(self, optimizer):
 model.on_before_optimizer_step = MethodType(on_before_optimizer_step, model)
 
 
-params["EARLY_STOPPING_PATIENCE"] = 10
+params["EARLY_STOPPING_PATIENCE"] = 15
 early_stop = EarlyStopping(
 	monitor="val/NLL Loss",
 	mode="min",
