@@ -8,7 +8,7 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Plotting import plot_coeffs_as_img
 
-model_str = "gdjhuwrm"
+model_str = "gdjhuwrm-v1"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/"
 
