@@ -112,19 +112,35 @@ These details follow @diffusion-transformer and @attention along with some manua
 
 
 #subpar.grid(
-  figure(image("Figures/Ground-Truth_Sample.pdf", width: 105%), caption: [Ground truth sample]), <a>,
-  figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <b>,
+  figure(image("Figures/Ground-Truth_Sample.pdf", width: 105%), caption: [Ground truth]), <1a>,
+  figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <1b>,
   figure(image("Figures/Colorbar.pdf", width: 100%)),
-  figure(image("Figures/Prediction_Sample.pdf", width: 100%), caption: [Model output]), <c>,
-  figure(image("Figures/Prediction-Difference_Sample.pdf"), caption: [Difference between @a and @c]), <d>,
   columns: (4fr, 4fr, 0.5fr),
-  rows: (50%, 50%),
-  caption: [Ground truth (@a) and inference model input (@b) from the first sample of the testset.],
-  label: <sample-visualizations>,
+  caption: [First sample from the testset.],
+  label: <sample-ground-truth>,
 )
+#subpar.grid(
+  figure(image("Figures/Interpolation-Prediction_Sample.pdf", width: 100%), caption: [ Interpolation output]),
+  figure(image("Figures/Interpolation-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
+  figure(image("Figures/Interpolation-Difference-Colorbar.pdf", width: 100%)),
+  columns: (4fr, 4fr, 0.5fr),
+  caption: [Bilinear interpolation on the sample shown in @1b. Shows smoothed variant of the inference input.],
+  label: <sample-interpolation>,
+)
+#subpar.grid(
+  figure(image("Figures/Model-Prediction_Sample.pdf", width: 100%), caption: [Model output]),
+  figure(image("Figures/Model-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
+  figure(image("Figures/Model-Difference-Colorbar.pdf", width: 100%)),
+  columns: (4fr, 4fr, 0.5fr),
+  caption: [Model prediction on the sample shown in @1b. Shows TODO TODO],
+  label: <sample-model>,
+)
+
 
 = Conclusion <conclusion>
 
+= Code Availability
+The code for this work is available on GitHub under #link("https://github.com/lugin100/Research-Project")
 #pagebreak()
 
 #bibliography("bibliography.yaml", style: "ieee.csl")
