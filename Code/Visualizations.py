@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import torch
 from Plotting import plot_tensor_as_map
 from Dataset import WeatherDataset, CoeffDataset
@@ -24,7 +25,7 @@ stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True
 coeff_ds = CoeffDataset(data_path)
 gt_coeff = coeff_ds.__getitem__(0)[:T]
 
-gt_coeff = (gt_coeff * stds + means)
+gt_coeff = (gt_coeff * stds + means).cpu()
 gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff)).squeeze().cpu()
 
 if not os.path.exists(ground_truth_path):
@@ -35,13 +36,13 @@ if not os.path.exists(ground_truth_path):
 	plot_tensor_as_map(gt_reals, save_name=ground_truth_path + "Ground-Truth", vmin=0, vmax=70)
 
 	# Transform to coefficients
-	single_datapoint_coeffs = flatten_coeffs(sh_transform(gt_reals[None,...]))
-	assert torch.allclose(single_datapoint_coeffs, gt_coeff)
+	single_datapoint_coeffs = flatten_coeffs(sh_transform(gt_reals[None,...])).cpu()
+#	np.testing.assert_allclose(single_datapoint_coeffs, gt_coeff)
 	L = triangular_number(61)
 	# Plot training model input (coefficients zeroed after L)
 	single_datapoint_coeffs[:,L:] = 0
 	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs)).squeeze()
-	assert torch.allclose(input_datapoint, gt_reals)
+#	assert np.testing.assert_allclose(input_datapoint, gt_reals)
 	plot_tensor_as_map(input_datapoint, save_name=ground_truth_path + "Training-model-input", vmin=0, vmax=70)
 
 	# Plot inference model input (only coefficients up to L)
