@@ -11,7 +11,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "interpolation"
+model_str = "gdjhuwrm"
 model_path = f"Results/{model_str}/"
 
 
