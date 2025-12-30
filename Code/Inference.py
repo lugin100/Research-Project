@@ -16,7 +16,8 @@ from Functions import (
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 model_str = "gdjhuwrm"
-DIR = f"Results/{model_str}/Predictions"
+checkpoint = "-v1"
+DIR = f"Results/{model_str}{checkpoint}/Predictions"
 L = triangular_number(61)
 T = triangular_number(121)
 # Load dataset
@@ -36,7 +37,7 @@ dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 
 # Load model checkpoint
-model_path = f"autoregressive-downcasting/{model_str}/checkpoints/best-model.ckpt"
+model_path = f"autoregressive-downcasting/{model_str}/checkpoints/best-model{checkpoint}.ckpt"
 
 model = TransformerModel.load_from_checkpoint(model_path)
 
