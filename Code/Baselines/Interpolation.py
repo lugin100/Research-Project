@@ -2,13 +2,13 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from Dataset import CoeffDataset
-from Functions import sh_transform, flatten_coeffs, inv_sh_transform, unflatten_coeffs, DEVICE
+from Functions import triangular_number, sh_transform, flatten_coeffs, inv_sh_transform, unflatten_coeffs, DEVICE
 
-N = 120
-M = 60
+N = 121
+M = 61
 
-T = int(N*(N+1)/2)
-L = int(M*(M+1)/2)
+T = triangular_number(N)
+L = triangular_number(M)
 
 means = torch.load("data/wind-speed_level-500_trainset_means.pt", weights_only=True).to(DEVICE)
 stds = torch.load("data/wind-speed_level-500_trainset_stds.pt", weights_only=True).to(DEVICE)
@@ -24,7 +24,7 @@ with torch.no_grad():
 		batch = batch.to(DEVICE)
 		batch = batch * stds[None,:L] + means[None,:L]
 		input = inv_sh_transform(unflatten_coeffs(batch)).unsqueeze(1)
-		result = F.interpolate(input, size=(N+1,2*N), mode="bilinear")
+		result = F.interpolate(input, size=(N, 2*(N-1)), mode="bilinear")
 		result = result.squeeze(1)
 		torch.save(result.cpu(), f"Results/interpolation/Predictions/reals/batch_{i}.pt")
 
