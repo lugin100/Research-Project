@@ -23,7 +23,7 @@ params = {
 	"T": triangular_number(N),  # Number of output coefficients
 	"D": 512,  					# Embedding dimension
 	"H": 8,  					# Number of heads in multi-head attention
-	"R": 6, 					# Number of sequential transformer blocks
+	"R": 5, 					# Number of sequential transformer blocks
 	"PI": 8,  					# Number of predicted mixture components
 	"EPS": 1e-5, 				# Clamping constant for variance of predicted distribution
 	"BETA": 0.5, 				# Parameter for beta-corrected NLL loss
@@ -56,7 +56,7 @@ params.update({
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=params["BASE_LR"])
 
-N_GPUS = 8
+N_GPUS = 7
 total_steps =  int(params["MAX_EPOCHS"] * len(trainloader)/N_GPUS)
 cosine_steps = total_steps - params["WARMUP_STEPS"]
 

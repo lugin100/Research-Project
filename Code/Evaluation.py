@@ -8,7 +8,7 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 from Plotting import plot_coeffs_as_img
 
-model_str = "gdjhuwrm-v1"
+model_str = "s2lugxqd"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/"
 
@@ -23,13 +23,12 @@ real_pred_files = sorted(real_pred_files, key=sort)
 coeff_pred_files = Path(pred_path).glob("coeffs/batch_*.pt")
 coeff_pred_files = sorted(coeff_pred_files, key=sort)
 
-B = 64
-#ground_truth_ds = WeatherDataset("wind_speed", time_slice=slice("2011", "2022", None), level=500)
-ground_truth_ds = CoeffDataset("data/wind-speed_level-500_testset")
+B = 256
+ground_truth_ds = CoeffDataset(data_path)
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
 
-#print(len(ground_truth_dl))
-#print(len(pred_files))
+print(len(ground_truth_dl))
+print(len(coeff_pred_files))
 #assert len(ground_truth_dl) == len(pred_files)
 
 T = triangular_number(121)
@@ -51,6 +50,8 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 			gt_batch = gt_batch[:,:T] * stds + means
 			gt_batch = unflatten_coeffs(gt_batch)
 			gt_reals_batch = inv_sh_transform(gt_batch)
+#			print(pred_batch.shape)
+#			print(gt_reals_batch.shape)
 			assert pred_batch.shape == gt_reals_batch.shape
 
 			rmse = RMSE(pred_batch, gt_reals_batch, feature_dims=(-1,-2), reduce=True)

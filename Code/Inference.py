@@ -15,8 +15,8 @@ from Functions import (
 
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
-model_str = "gdjhuwrm"
-checkpoint = "-v1"
+model_str = "s2lugxqd"
+checkpoint = "-v7"
 DIR = f"Results/{model_str}{checkpoint}/Predictions"
 L = triangular_number(61)
 T = triangular_number(121)
@@ -32,7 +32,7 @@ def __getitem__(self, idx):
 		return torch.tensor(idx), self.data[idx, :self.index_limit]
 testset.__getitem__ = MethodType(__getitem__, testset)
 
-B = 64
+B = 256
 dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 
