@@ -1,5 +1,5 @@
 ############ Setup ###############
-RUN_NAME = "V2"
+RUN_NAME = "V3"
 
 import torch
 from Functions import triangular_number
