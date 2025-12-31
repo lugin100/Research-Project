@@ -80,9 +80,11 @@ class TransformerModel(LightningModule):
 
 
 	def training_step(self, batch, batch_idx):
-		input = torch.view_as_real(batch)
+		batch = torch.view_as_real(batch)
+		input = batch[:,:-1,:]
+		target = batch[:, 1:, :]
 		params = self.forward(input)
-		loss = self.beta_nll_loss(*params, input)
+		loss = self.beta_nll_loss(*params, target)
 		self.log("Beta NLL Loss", loss, on_step=True, on_epoch=False, prog_bar=True, logger=True, sync_dist=True)
 		return loss
 
@@ -117,7 +119,7 @@ class TransformerModel(LightningModule):
 		self.logs.clear()
 
 
-	def infer___(self, input):
+	def infer(self, input):
 		"""
 		Autoregressively predict samples from L to T.
 
@@ -146,22 +148,6 @@ class TransformerModel(LightningModule):
 			x = samples.unsqueeze(1)
 		return output
 
-
-	def infer(self, input):
-		# interim implementation without caching
-		output = torch.zeros((input.shape[0], self.T, 2), device=DEVICE)
-		output[:,:self.L,:] = input
-
-		for index in range(self.L, self.T):
-			params = self.forward(
-				output[:, :index, :],
-				position_indices=torch.arange(index),
-				cache=None)
-			next_params = [param[:,-1,...] for param in params]
-			samples = self.sample_gmm(*next_params)
-			output[:, index, :] = samples
-		return output
- 
 
 	def sample_gmm(self, pis, means, variances):
 		"""
