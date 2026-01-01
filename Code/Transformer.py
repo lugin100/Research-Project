@@ -91,9 +91,11 @@ class TransformerModel(LightningModule):
 
 	def validation_step(self, batch, batch_idx):
 		batch = torch.view_as_real(batch)
-		params = self.forward(batch)
+		input = batch[:,:-1,:]
+		target = batch[:, 1:, :]
+		params = self.forward(input)
 		pis, means, variances = params
-		loss = self.beta_nll_loss(*params, batch)
+		loss = self.beta_nll_loss(*params, target)
 		pi_log = Metrics.pi_median(pis)
 		pp_log = Metrics.perplexity(pis)
 		weighted_means = (pis[...,None] * means).sum(axis=-2)
