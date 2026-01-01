@@ -54,7 +54,7 @@ class TransformerModel(LightningModule):
 		Else: Passes cache argument to be used as cache and returns 
 		forward pass and new cache.
 		position_indices is a list of indices of input in the sequence.
-		If positon_indices=None, assumes torch.arange(T).
+		If positon_indices=None, assumes torch.arange(T-1).
 		"""
 		use_cache = cache is not None
 		cache = None if cache == -1 else cache
@@ -184,7 +184,7 @@ class Embedding(nn.Module):
 		self.projection = nn.Linear(2, D)
 		self.positional_encoding = nn.Embedding(T, D)
 		self.positional_encoding.weight = nn.init.trunc_normal_(self.positional_encoding.weight, std=0.02)
-		self.default_indices = torch.arange(T, device=DEVICE)
+		self.default_indices = torch.arange(T-1, device=DEVICE)
 
 	def forward(self, input, position_indices):
 		hiddens = self.projection(input)
