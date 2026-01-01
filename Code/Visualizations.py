@@ -11,7 +11,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "gdjhuwrm"
+model_str = "0u0y7zwn"
 model_path = f"Results/{model_str}/"
 
 

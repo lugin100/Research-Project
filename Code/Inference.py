@@ -15,8 +15,8 @@ from Functions import (
 
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
-model_str = "s2lugxqd"
-checkpoint = "-v7"
+model_str = "0u0y7zwn"
+checkpoint = ""
 DIR = f"Results/{model_str}{checkpoint}/Predictions"
 L = triangular_number(61)
 T = triangular_number(121)
