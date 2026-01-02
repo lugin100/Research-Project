@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from matplotlib.colors import LogNorm
 import xarray as xr
 import torch
 import numpy as np
@@ -36,7 +37,7 @@ def plot_tensor_as_map(data, globe=False, show=True, save_name=None, vmin=None, 
 def plot_coeffs_as_img(data, show=True, save_name=None):
     assert isinstance(data, torch.Tensor)
     data = data.cpu().numpy()
-    plt.imshow(data)#, vmin=0, vmax=1.2)
+    plt.imshow(data, norm=LogNorm())#, vmin=0, vmax=1.2)
     plt.colorbar()
     plot_io(show, save_name)
 
