@@ -103,7 +103,8 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 		"""
 
 		rmses = rmses / i
-		rmses = unflatten_coeffs(rmses.unsqueeze(0)).squeeze()
-		plot_coeffs_as_img(rmses, show=False, save_name=log_path + "Coefficient_RMSE")
 		rmse = rmses.mean()
 		print("RMSE between predicted coefficients and ground truth: ", rmse.item(), file=log_file)
+		
+		rmses = unflatten_coeffs(rmses.unsqueeze(0)).squeeze()
+		plot_coeffs_as_img(rmses, show=False, save_name=log_path + "Coefficient_RMSE")
