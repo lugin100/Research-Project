@@ -40,8 +40,8 @@ def plot_coeffs_as_img(data, show=True, save_name=None):
     data = data.cpu().numpy()
     plt.imshow(data, norm=LogNorm())#, vmin=0, vmax=1.2)
     cbar = plt.colorbar()
-    cbar.ax.yaxis.set_major_formatter(ScalarFormatter())
-    cbar.ax.yaxis.get_major_formatter().set_scientific(False)
+    cbar.ax.yaxis.set_minor_formatter(ScalarFormatter())
+    cbar.ax.yaxis.get_minor_formatter().set_scientific(False)
     plot_io(show, save_name)
 
 def plot_coeffs_as_hist(data, show=True, save_name=None):
