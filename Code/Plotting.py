@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
+from matplotlib.ticker import ScalarFormatter
 import xarray as xr
 import torch
 import numpy as np
@@ -38,7 +39,9 @@ def plot_coeffs_as_img(data, show=True, save_name=None):
     assert isinstance(data, torch.Tensor)
     data = data.cpu().numpy()
     plt.imshow(data, norm=LogNorm())#, vmin=0, vmax=1.2)
-    plt.colorbar()
+    cbar = plt.colorbar()
+    cbar.ax.yaxis.set_major_formatter(ScalarFormatter())
+    cbar.ax.yaxis.get_major_formatter().set_scientific(False)
     plot_io(show, save_name)
 
 def plot_coeffs_as_hist(data, show=True, save_name=None):
