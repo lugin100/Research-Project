@@ -5,6 +5,7 @@ import xarray as xr
 import torch
 import numpy as np
 from torch_harmonics.plotting import plot_sphere
+from scipy.signal import savgol_filter
 
 plt.rcParams.update({'font.size': 16})
 
@@ -67,4 +68,14 @@ def plot_coeff_stats(path, show=True, save_name=None):
     plt.ylabel("Absolute value of coefficient")
     plt.legend()
     plot_io(show, save_name)
+
+
+def plot_RMSE_over_time(rmses, show=False, save_name=None):
+    xs = np.linspace(2013, 2022, len(rmses))
+    smoothed = savgol_filter(xs, window_length=10, polyorder=3)
+    plt.plot(xs, smoothed)
+    plt.xlabel("Time")
+    plt.ylabel("RMSE")
+    plot_io(save_name=save_name)
+
 

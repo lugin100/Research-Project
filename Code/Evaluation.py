@@ -1,14 +1,12 @@
 from pathlib import Path
 import re
 import torch
-import numpy as np
 
 from Metrics import RMSE
 from Functions import DEVICE, triangular_number, inv_sh_transform, unflatten_coeffs, flatten_coeffs
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
-from Plotting import plot_coeffs_as_img, plot_io
-from matplotlib import pyplot as plt
+from Plotting import plot_coeffs_as_img, plot_RMSE_over_time
 
 model_str = "0u0y7zwn"
 data_path = "data/wind-speed_level-500_testset"
@@ -73,10 +71,7 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 				rmse = rmse.cpu().item()
 				rmses.append(rmse)
 		"""
-		plt.plot(np.linspace(2013, 2022, len(rmses)), rmses)
-		plt.xlabel("Time")
-		plt.ylabel("RMSE")
-		plot_io(save_name=log_path + "RMSE_over_time")
+		plot_RMSE_over_time(rmses, save_name = log_path + "RMSE_over_time")
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
 
 		# RMSE of predicted coefficients
