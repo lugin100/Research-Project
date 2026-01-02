@@ -1,6 +1,7 @@
 from pathlib import Path
 import re
 import torch
+import numpy as np
 
 from Metrics import RMSE
 from Functions import DEVICE, triangular_number, inv_sh_transform, unflatten_coeffs, flatten_coeffs
@@ -55,9 +56,8 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 #			print(gt_reals_batch.shape)
 			assert pred_batch.shape == gt_reals_batch.shape
 
-			rmse = RMSE(pred_batch, gt_reals_batch, feature_dims=(-1,-2), reduce=True)
-			rmse = rmse.cpu().item()
-			rmses.append(rmse)
+			rmse_batch = RMSE(pred_batch, gt_reals_batch, feature_dims=(-1,-2), reduce=False)
+			rmses.extend(rmse_batch.tolist())
 		"""
 		pred_index = 0
 		for pred_batch_path in real_pred_files:
@@ -73,7 +73,9 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 				rmse = rmse.cpu().item()
 				rmses.append(rmse)
 		"""
-		plt.plot(rmses)
+		plt.plot(np.linspace(2013, 2022, len(rmses)), rmses)
+		plt.xlabel("Time")
+		plt.ylabel("RMSE")
 		plot_io(save_name=log_path + "RMSE_over_time")
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
 
