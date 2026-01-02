@@ -1,6 +1,6 @@
-#set document(title: [Climate Downscaling via spectral Autoregressive Transformer Modelling])
+#set document(title: [Climate Downscaling via Spectral Autoregressive Transformer Modelling])
 
-#import "@preview/subpar:0.2.2"
+#import "@preview/subpar:0.2.2"  // For subplots
 
 #set text(
   size: 12pt,
@@ -101,41 +101,44 @@ In order to do so, the model has a head which coerces the hidden state for a seq
  - GMM component means
  - isotropic GMM component variances using the softplus and thresholding to $10^(-5)$
  analogous to @GMM-Transformer. The number of GMM components is fixed at eight.
- During inference, the predicted distribution parameters are used to sample a sequence element. During training, the negatve log likelihood (NLL) of the true sequence elements under the distribution parameterized by the network is used as a loss function. To prevent common pitfalls in training of parameter estimation with NLL, $beta$-corrected NLL is employed as loss function $beta = 0.5$. @beta-NLL
+ During inference, the predicted distribution parameters are used to sample a sequence element. During training, the negatve log likelihood (NLL) of the true sequence elements under the distribution parameterized by the network is used as a loss function. To prevent common pitfalls in training of parameter estimation with NLL, $beta$-corrected NLL is employed as loss function with $beta = 0.5$. @beta-NLL
 
 == Transformer Model
-A standard decoder-only transformer model is used with a hidden dimension of 512 and four sequential transformer blocks with eight attention heads each. The learning rate follows a cosine annealing decay after a linear warmup of one epoch with a maximum of $5 times 10^(-5)$. For regularization, early stopping on the NLL loss of the validation step and dropout with probability $10%$ is used. 
-These details follow @diffusion-transformer and @attention along with some manual tuning.
+A standard decoder-only transformer model is used with a hidden dimension of 512 and five sequential transformer blocks with eight attention heads each. The learning rate follows a cosine annealing decay after a linear warmup of 200 steps with a maximum of $5 times 10^(-5)$. For regularization, early stopping on the NLL loss of the validation step and dropout with probability $10%$ is used. 
+These details follow @diffusion-transformer and @attention along with some manual tuning. Overall, the model has $23.3$
+ million parameters.
 
 
+//#set page(margin: (x: 1cm))
 = Results <results>
-
-
-#subpar.grid(
+The transformer model achieves a root mean squared error (RMSE) on the testset of $1.84 m/s$. For comparison, bilinear interpolation achieves an RMSE of $2.10 m/s$. For visualization, the predictions of the first testset sample are plotted in @sample-interpolation for the interpolation and @sample-model for the transformer model.
+#pad(x: -2cm,
+subpar.grid(
   figure(image("Figures/Ground-Truth_Sample.pdf", width: 105%), caption: [Ground truth]), <1a>,
   figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <1b>,
-  figure(image("Figures/Colorbar.pdf", width: 100%)),
+  figure(image("Figures/Colorbar.pdf", width: 100%), caption: []),
   columns: (4fr, 4fr, 0.5fr),
-  caption: [First sample from the testset.],
+  caption: [First sample from the test set.],
   label: <sample-ground-truth>,
-)
-#subpar.grid(
-  figure(image("Figures/Interpolation-Prediction_Sample.pdf", width: 100%), caption: [ Interpolation output]),
+))
+#pad(x: -2cm,
+subpar.grid(
+  figure(image("Figures/Interpolation-Prediction_Sample.pdf", width: 100%), caption: [Interpolation output]),
   figure(image("Figures/Interpolation-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
   figure(image("Figures/Interpolation-Difference-Colorbar.pdf", width: 100%)),
   columns: (4fr, 4fr, 0.5fr),
   caption: [Bilinear interpolation on the sample shown in @1b. Shows smoothed variant of the inference input.],
   label: <sample-interpolation>,
-)
-#subpar.grid(
+))
+#pad(x: -2cm,
+subpar.grid(
   figure(image("Figures/Model-Prediction_Sample.pdf", width: 100%), caption: [Model output]),
   figure(image("Figures/Model-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
   figure(image("Figures/Model-Difference-Colorbar.pdf", width: 100%)),
   columns: (4fr, 4fr, 0.5fr),
   caption: [Model prediction on the sample shown in @1b. Shows TODO TODO],
   label: <sample-model>,
-)
-
+))
 
 = Conclusion <conclusion>
 
