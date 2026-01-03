@@ -1,11 +1,9 @@
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import ScalarFormatter
-import xarray as xr
 import torch
 import numpy as np
 from torch_harmonics.plotting import plot_sphere
-from scipy.signal import savgol_filter
 
 plt.rcParams.update({'font.size': 16})
 
@@ -18,11 +16,6 @@ def plot_io(show=False, save_name=None):
     if show:
         plt.show()
     plt.close('all') # Clear existing state in plt
-
-def plot_xarray_as_map(data, show=True, save_name=None):
-    assert isinstance(data, xr.DataArray)
-    data.transpose().plot()
-    plot_io(show, save_name)
 
 def plot_tensor_as_map(data, globe=False, show=True, save_name=None, vmin=None, vmax=None):
     assert isinstance(data, torch.Tensor)
