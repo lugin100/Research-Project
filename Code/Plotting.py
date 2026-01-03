@@ -71,7 +71,10 @@ def plot_coeff_stats(path, show=True, save_name=None):
 
 def plot_RMSE_over_time(rmses):
     xs = np.linspace(2013, 2022, len(rmses))
+    years = np.linspace(2013, 2022, 10)
     plt.plot(xs, rmses)
+    plt.xticks(years, rotation="vertical")
+    plt.grid()
     plt.xlabel("Time")
     plt.ylabel("RMSE")
 
