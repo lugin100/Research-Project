@@ -7,6 +7,7 @@ import numpy as np
 from torch_harmonics.plotting import plot_sphere
 from scipy.signal import savgol_filter
 
+model = "0u0y7zwn"
 plt.rcParams.update({'font.size': 16})
 
 def plot_io(show=False, save_name=None):
@@ -36,9 +37,9 @@ def plot_tensor_as_map(data, globe=False, show=True, save_name=None, vmin=None, 
     plt.ylabel("Latitude")
     plot_io(show, save_name)
 
-def plot_coeffs_as_img(data, show=True, save_name=None):
-    assert isinstance(data, torch.Tensor)
-    data = data.cpu().numpy()
+def plot_coeffs_as_img(data=None, show=True, save_name=None):
+    data = data if data is not None else torch.load(f"Results/{model}/RMSE_over_time.pt", weights_only=True)
+    data = data.cpu().numpy() if isinstance(data, torch.Tensor) else data
     plt.imshow(data, norm=LogNorm())#, vmin=0, vmax=1.2)
     cbar = plt.colorbar()
     cbar.ax.yaxis.set_minor_formatter(ScalarFormatter())
@@ -72,7 +73,7 @@ def plot_coeff_stats(path, show=True, save_name=None):
 
 def plot_RMSE_over_time(rmses, show=False, save_name=None):
     xs = np.linspace(2013, 2022, len(rmses))
-    smoothed = savgol_filter(xs, window_length=10, polyorder=3)
+    smoothed = savgol_filter(rmses, window_length=10, polyorder=3)
     plt.plot(xs, smoothed)
     plt.xlabel("Time")
     plt.ylabel("RMSE")

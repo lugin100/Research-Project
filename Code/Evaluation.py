@@ -6,7 +6,7 @@ from Metrics import RMSE
 from Functions import DEVICE, triangular_number, inv_sh_transform, unflatten_coeffs, flatten_coeffs
 from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
-from Plotting import plot_coeffs_as_img, plot_RMSE_over_time
+#from Plotting import plot_coeffs_as_img, plot_RMSE_over_time
 
 model_str = "0u0y7zwn"
 data_path = "data/wind-speed_level-500_testset"
@@ -71,7 +71,8 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 				rmse = rmse.cpu().item()
 				rmses.append(rmse)
 		"""
-		plot_RMSE_over_time(rmses, save_name = log_path + "RMSE_over_time")
+		torch.save(torch.tensors(rmses), log_path + "RMSE_over_time.pt")
+#		plot_coeffs_as_img(rmses, save_name=log_path + "RMSE_over_time")
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
 
 		# RMSE of predicted coefficients
@@ -82,8 +83,6 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 			pred_batch = torch.load(pred_path, weights_only=True).cpu()
 			if pred_batch.shape[0] != B:
 				break
-#			if i>1:
-#				break
 			gt_batch = torch.view_as_real(gt_batch[:,:T]).cpu()
 			assert pred_batch.shape == gt_batch.shape
 			rmses_batch = RMSE(pred_batch, gt_batch, feature_dims=-1, reduce=False)
@@ -104,6 +103,7 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 		rmses = rmses / i
 		rmse = rmses.mean()
 		print("RMSE between predicted coefficients and ground truth: ", rmse.item(), file=log_file)
-		
+
 		rmses = unflatten_coeffs(rmses.unsqueeze(0)).squeeze()
-		plot_coeffs_as_img(rmses, show=False, save_name=log_path + "Coefficient_RMSE")
+		torch.save(rmses, log_path + "Coefficient_RMSE.pt")
+#		plot_coeffs_as_img(rmses, show=False, save_name=log_path + "Coefficient_RMSE")
