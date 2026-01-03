@@ -8,7 +8,7 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 #from Plotting import plot_coeffs_as_img, plot_RMSE_over_time
 
-model_str = "0u0y7zwn"
+model_str = "interpolation"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/"
 
@@ -71,7 +71,7 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 				rmse = rmse.cpu().item()
 				rmses.append(rmse)
 		"""
-		torch.save(torch.tensors(rmses), log_path + "RMSE_over_time.pt")
+		torch.save(torch.tensor(rmses), log_path + "RMSE_over_time.pt")
 #		plot_coeffs_as_img(rmses, save_name=log_path + "RMSE_over_time")
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
 
