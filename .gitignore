@@ -4,7 +4,8 @@
 .vscode
 # pycharm specific things
 .idea
-
+# notebook specific things
+.ipynb_checkpoints
 # local data
 data
 Models
