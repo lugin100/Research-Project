@@ -1,8 +1,4 @@
-from Dataset import *
-
-
-
-
+from Dataset import WeatherDataset, CoeffDataset
 
 trainset_path = "data/wind-speed_level-500_trainset"
 validationset_path = "data/wind-speed_level-500_validationset"

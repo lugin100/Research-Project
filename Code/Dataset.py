@@ -1,7 +1,7 @@
 import xarray as xr
 import torch
 from torch.utils.data import Dataset, DataLoader
-from Functions import *
+from Functions import sh_transform, flatten_coeffs
 from tqdm import tqdm
 
 
