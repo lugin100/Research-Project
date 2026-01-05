@@ -1,5 +1,6 @@
 ############ Setup ###############
-RUN_NAME = "V3"
+RUN_NAME = "V3-Deep"
+fast_dev_run = False
 
 import torch
 from Functions import triangular_number
@@ -23,7 +24,7 @@ params = {
 	"T": triangular_number(N),  # Number of output coefficients
 	"D": 512,  					# Embedding dimension
 	"H": 8,  					# Number of heads in multi-head attention
-	"R": 5, 					# Number of sequential transformer blocks
+	"R": 10, 					# Number of sequential transformer blocks
 	"PI": 8,  					# Number of predicted mixture components
 	"EPS": 1e-5, 				# Clamping constant for variance of predicted distribution
 	"BETA": 0.5, 				# Parameter for beta-corrected NLL loss
@@ -35,13 +36,13 @@ model = TransformerModel(**params)
 
 ############# Datasets ##############
 
-params["B"] = 32  # Training and eval batch size
+params["B"] = 16  # Training and eval batch size
 
 ds = CoeffDataset("data/wind-speed_level-500_trainset")
 trainloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=True)
 
 ds = CoeffDataset("data/wind-speed_level-500_validationset")
-validationloader = DataLoader(ds, batch_size=params["B"], num_workers=8, shuffle=False)
+validationloader = DataLoader(ds, batch_size= 2 * params["B"], num_workers=8, shuffle=False)
 
 
 ############# Optimizer #############
@@ -109,14 +110,14 @@ wandb_logger.experiment.config.update(params)
 checkpointing = ModelCheckpoint(
     monitor="val/NLL Loss",
     mode="min",
-    save_top_k=10,
+    save_top_k=4,
     filename="best-model",
 	)
 
 ############# Execution #############
 
 trainer = Trainer(
-	fast_dev_run=False,
+	fast_dev_run=fast_dev_run,
 	max_epochs=params["MAX_EPOCHS"],
 	logger=wandb_logger,
 	log_every_n_steps=5,
