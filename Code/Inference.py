@@ -16,8 +16,9 @@ from Functions import (
 torch.set_float32_matmul_precision("medium") # Faster on tensor cores
 
 model_str = "0u0y7zwn"
+model_name = "New-model-deep"
 checkpoint = ""
-DIR = f"Results/{model_str}{checkpoint}/Predictions"
+DIR = f"Results/{model_name}{checkpoint}/Predictions"
 L = triangular_number(61)
 T = triangular_number(121)
 # Load dataset
@@ -32,7 +33,7 @@ def __getitem__(self, idx):
 		return torch.tensor(idx), self.data[idx, :self.index_limit]
 testset.__getitem__ = MethodType(__getitem__, testset)
 
-B = 256
+B = 128
 dl = DataLoader(testset, batch_size=B, num_workers=7, shuffle=False)
 
 
