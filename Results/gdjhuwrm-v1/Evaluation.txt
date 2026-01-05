@@ -1,2 +1,0 @@
-RMSE between test weather dataset and predictions:  11.136925325161073
-RMSE between predicted coefficients and ground truth:  1.2666219472885132

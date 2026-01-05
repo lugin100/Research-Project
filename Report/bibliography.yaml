@@ -200,3 +200,13 @@ attention:
             volume: 14
             issn: 9781510860964
 
+AdamW:
+      type: proceedings
+      title: "Decoupled Weight Decay Regularization"
+      author: ["Ilya Loshchilov", "Frank Hutter"]
+      year: 2017
+      parent: 
+            type: periodical
+            title: "International Conference on Learning Representations"
+      serial-number:
+            doi: https://doi.org/10.48550/arXiv.1711.05101
