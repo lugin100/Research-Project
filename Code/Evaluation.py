@@ -27,9 +27,7 @@ B = 256
 ground_truth_ds = CoeffDataset(data_path)
 ground_truth_dl = DataLoader(ground_truth_ds, batch_size=B, num_workers=7, shuffle=False)
 
-print(len(ground_truth_dl))
-print(len(coeff_pred_files))
-#assert len(ground_truth_dl) == len(pred_files)
+assert len(ground_truth_dl) == len(coeff_pred_files), f"{len(ground_truth_dl)} =/= {len(coeff_pred_files)}"
 
 T = triangular_number(121)
 
@@ -44,33 +42,15 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 
 		for pred_path, gt_batch in zip(real_pred_files, ground_truth_dl):
 			pred_batch = torch.load(pred_path, weights_only=True).to(DEVICE)
-			if pred_batch.shape[0] != B:
-				break
 			gt_batch = gt_batch.to(DEVICE)
 			gt_batch = gt_batch[:,:T] * stds + means
 			gt_batch = unflatten_coeffs(gt_batch)
 			gt_reals_batch = inv_sh_transform(gt_batch)
-#			print(pred_batch.shape)
-#			print(gt_reals_batch.shape)
 			assert pred_batch.shape == gt_reals_batch.shape, f"{pred_batch.shape} =/= {gt_reals_batch.shape}"
 
 			rmse_batch = RMSE(pred_batch, gt_reals_batch, feature_dims=(-1,-2), reduce=False)
 			rmses.extend(rmse_batch.tolist())
-		"""
-		pred_index = 0
-		for pred_batch_path in real_pred_files:
-			pred_batch = torch.load(pred_batch_path, weights_only=True).cpu()
-			for pred_item in pred_batch:
-				gt_index = 8 * pred_index
-				gt_item = ground_truth_ds.__getitem__(gt_index).cpu()
-				pred_index += 1
-				gt_item = gt_item[None,:T].cpu()
-				gt_item = gt_item * stds + means
-				gt_reals_item = inv_sh_transform(unflatten_coeffs(gt_item))
-				rmse = RMSE(pred_item.cpu(), gt_reals_item.squeeze().cpu(), feature_dims=(-1,-2), reduce=True)
-				rmse = rmse.cpu().item()
-				rmses.append(rmse)
-		"""
+
 		torch.save(torch.tensor(rmses), log_path + "RMSE_over_time.pt")
 #		plot_coeffs_as_img(rmses, save_name=log_path + "RMSE_over_time")
 		print("RMSE between test weather dataset and predictions: ", sum(rmses)/len(rmses), file=log_file)
@@ -81,24 +61,11 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 
 		for pred_path, gt_batch in zip(coeff_pred_files, ground_truth_dl):
 			pred_batch = torch.load(pred_path, weights_only=True).cpu()
-			if pred_batch.shape[0] != B:
-				break
 			gt_batch = torch.view_as_real(gt_batch[:,:T]).cpu()
-			assert pred_batch.shape == gt_batch.shape
+			assert pred_batch.shape == gt_batch.shape, f"{pred_batch.shape} =/= {gt_batch.shape}"
 			rmses_batch = RMSE(pred_batch, gt_batch, feature_dims=-1, reduce=False)
 			rmses += rmses_batch.mean(axis=0)
 			i += 1
-		"""
-		for pred_batch_path in coeff_pred_files:
-			pred_batch = torch.load(pred_batch_path, weights_only=True).cpu()
-			for pred_item in pred_batch:
-				gt_index = 8 * i
-				gt_item = ground_truth_ds.__getitem__(gt_index)
-				i += 1
-				gt_item = torch.view_as_real(gt_item[:T]).cpu()
-				rmses += RMSE(pred_item, gt_item, feature_dims=-1, reduce=False)
-
-		"""
 
 		rmses = rmses / i
 		rmse = rmses.mean()
