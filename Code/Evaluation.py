@@ -8,7 +8,7 @@ from Dataset import CoeffDataset
 from torch.utils.data import DataLoader
 #from Plotting import plot_coeffs_as_img, plot_RMSE_over_time
 
-model_str = "interpolation"
+model_str = "random"
 data_path = "data/wind-speed_level-500_testset"
 log_path = f"Results/{model_str}/"
 
@@ -52,7 +52,7 @@ with open(log_path + "Evaluation.txt", "w") as log_file:
 			gt_reals_batch = inv_sh_transform(gt_batch)
 #			print(pred_batch.shape)
 #			print(gt_reals_batch.shape)
-			assert pred_batch.shape == gt_reals_batch.shape
+			assert pred_batch.shape == gt_reals_batch.shape, f"{pred_batch.shape} =/= {gt_reals_batch.shape}"
 
 			rmse_batch = RMSE(pred_batch, gt_reals_batch, feature_dims=(-1,-2), reduce=False)
 			rmses.extend(rmse_batch.tolist())

@@ -4,13 +4,13 @@ from Dataset import CoeffDataset
 from Functions import triangular_number, inv_sh_transform, unflatten_coeffs, DEVICE
 
 N = 121
-M = 60
+M = 61
 
 T = triangular_number(N)
 L = triangular_number(M)
 ds = CoeffDataset("data/wind-speed_level-500_testset")
 
-B = 10000
+B = 256
 loader = DataLoader(ds, batch_size=B, num_workers=7, shuffle=False)
 
 means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T].to(DEVICE)
