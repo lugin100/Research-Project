@@ -29,7 +29,7 @@ def plot_tensor_as_map(data, globe=False, show=True, save_name=None, vmin=None, 
     plt.ylabel("Latitude")
     plot_io(show, save_name)
 
-def plot_coeffs_as_img(data=None, show=True, save_name=None):
+def plot_coeffs_as_img(data, show=True, save_name=None):
     data = data.cpu().numpy() if isinstance(data, torch.Tensor) else data
     plt.imshow(data, norm=LogNorm())#, vmin=0, vmax=1.2)
     cbar = plt.colorbar()
