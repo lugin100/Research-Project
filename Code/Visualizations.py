@@ -11,7 +11,7 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "0u0y7zwn"
+model_str = "New-model-deep"
 model_path = f"Results/{model_str}/"
 
 
