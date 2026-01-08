@@ -114,8 +114,8 @@ These details follow @diffusion-transformer and @attention along with some manua
 
 
 = Results <results>
-The transformer model achieves a root mean squared error (RMSE) on the testset of $1.84 m/s$. For comparison, bilinear interpolation achieves an RMSE of $2.10 m/s$. The predictions of the first testset sample are plotted in @sample-interpolation for the interpolation and @sample-model for the transformer model. They show that the interpolation makes errors predominantly in regions of large change of wind speed, while the transformer models errors appear more like small dots, likely stemming from spherical harmonic coefficients with large degree. @coefficient-RMSE shows the RMSE on those coefficients, averaged over the test set. This shows that the errors do not increase during autoregressive rollout, i.e. sampling errors do not accumulate. In @RMSE-over-time, the (smoothed) RMSE is plotted over the timestamps of the test set samples. This shows two things: The error does not seem to increase over time, which could have been caused by distribution shift away from the train set that ends in 2005. Secondly, it shows a seasonal trend that is weak in amplitude but consistent. Predictions are slightly better in (northern hemisphere) autumn and winter, and worse in spring/summer.
-#pad(x: -2cm,
+The transformer model achieves a root mean squared error (RMSE) on the test set of $1.84 m/s$. For comparison, bilinear interpolation achieves an RMSE of $2.10 m/s$. The predictions of the first test set sample are plotted in @sample-interpolation for the interpolation and @sample-model for the transformer model. They show that the interpolation makes errors predominantly in regions of large change of wind speed, while the transformer models errors appear more like small dots, likely stemming from spherical harmonic coefficients with large degree. @coefficient-RMSE shows the RMSE on those coefficients, averaged over the test set. This shows that the errors do not increase during autoregressive rollout, i.e. sampling errors do not accumulate. In @RMSE-over-time, the (smoothed) RMSE is plotted over the timestamps of the test set samples. This shows two things: The error does not seem to increase over time, which could have been caused by distribution shift away from the train set that ends in 2005. Secondly, it shows a seasonal trend that is weak in amplitude but consistent. Predictions are slightly better in (northern hemisphere) autumn and winter, and worse in spring/summer.
+#pad(x: -1cm,
 subpar.grid(
   figure(image("Figures/Ground-Truth_Sample.pdf", width: 105%), caption: [Ground truth]), <1a>,
   figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <1b>,
@@ -124,7 +124,7 @@ subpar.grid(
   caption: [First sample from the test set.],
   label: <sample-ground-truth>,
 ))
-#pad(x: -2cm,
+#pad(x: -1cm,
 subpar.grid(
   figure(image("Figures/Interpolation-Prediction_Sample.pdf", width: 100%), caption: [Interpolation output]),
   figure(image("Figures/Interpolation-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
@@ -133,7 +133,7 @@ subpar.grid(
   caption: [Bilinear interpolation on the sample shown in @1b. Shows smoothed variant of the inference input. Errors are predominantly along edges of large change in wind speed.],
   label: <sample-interpolation>,
 ))
-#pad(x: -2cm,
+#pad(x: -1cm,
 subpar.grid(
   figure(image("Figures/Model-Prediction_Sample.pdf", width: 100%), caption: [Model output]),
   figure(image("Figures/Model-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
@@ -143,7 +143,7 @@ subpar.grid(
   label: <sample-model>,
 ))
 
-#pad(x: -2cm,
+#pad(x: -1cm,
 subpar.grid(
   figure(image("Figures/Coefficient_RMSE.pdf", width: 100%), caption: [RMSE for SH coefficients. Coefficient matrix is lower-triangular and coefficients $<= 61$ are model input, hence whitespace in the figure that corresponds to no error.]), <coefficient-RMSE>,
   figure(image("Figures/RMSE_over_time.pdf"), caption: [RMSE over time on the test set. Values are smoothed by batch averaging over six days and then exponential moving averaging with smoothing factor $alpha = 0.05$.]), <RMSE-over-time>,
