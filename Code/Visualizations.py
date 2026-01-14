@@ -1,8 +1,8 @@
-import os
+# Visualizations on first sample
+
 import numpy as np
 import torch
-from Plotting import plot_tensor_as_map
-from Dataset import WeatherDataset, CoeffDataset
+from Dataset import CoeffDataset
 from Functions import (
 		DEVICE,
 		triangular_number,
@@ -11,52 +11,43 @@ from Functions import (
 		sh_transform,
 		inv_sh_transform)
 
-model_str = "New-model-deep"
-model_path = f"Results/{model_str}/"
-
-
-ground_truth_path = "Results/ground-truth/"
 data_path = "data/wind-speed_level-500_testset"
 
-T = triangular_number(121)
-means = torch.load("data/wind-speed_level-500_testset_means.pt", weights_only=True)[None,:T]
-stds = torch.load("data/wind-speed_level-500_testset_stds.pt", weights_only=True)[None,:T]
+means = torch.load(data_path + "_means.pt", weights_only=True)
+stds = torch.load(data_path + "_stds.pt", weights_only=True)
 
 coeff_ds = CoeffDataset(data_path)
-gt_coeff = coeff_ds.__getitem__(0)[:T]
+gt_coeff = coeff_ds.__getitem__(0)
 
-gt_coeff = (gt_coeff * stds + means).cpu()
+gt_coeff = (gt_coeff * stds + means)
 gt_reals = inv_sh_transform(unflatten_coeffs(gt_coeff)).squeeze().cpu()
 
-if not os.path.exists(ground_truth_path):
-	os.makedirs(ground_truth_path)
+L = triangular_number(61)
 
-	# Plot single datapoint as example
+vmin = -30
+vmax = 40
 
-	plot_tensor_as_map(gt_reals, save_name=ground_truth_path + "Ground-Truth", vmin=-30, vmax=45)
-
-	# Transform to coefficients
-	single_datapoint_coeffs = flatten_coeffs(sh_transform(gt_reals[None,...])).cpu()
-#	np.testing.assert_allclose(single_datapoint_coeffs, gt_coeff)
-	L = triangular_number(61)
-	# Plot training model input (coefficients zeroed after L)
-	single_datapoint_coeffs[:,L:] = 0
-	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs)).squeeze()
-#	assert np.testing.assert_allclose(input_datapoint, gt_reals)
-	plot_tensor_as_map(input_datapoint, save_name=ground_truth_path + "Training-model-input", vmin=-30, vmax=45)
-
-	# Plot inference model input (only coefficients up to L)
-	single_datapoint_coeffs = single_datapoint_coeffs[:,:L]
-	input_datapoint = inv_sh_transform(unflatten_coeffs(single_datapoint_coeffs))
-	plot_tensor_as_map(input_datapoint.squeeze(), save_name=ground_truth_path + "Inference-model-input", vmin=-30, vmax=45)
+fig, subplots = plt.subplots(nrows = 4, ncols = 2, sharex="All", sharey="All")
 
 
-# Load prediction
-batch = torch.load(model_path + "Predictions/reals/batch_0.pt", weights_only=True)
-first_sample = batch[0].cpu()
+subplots[0,0].imshow(gt_reals, cmap = "turbo", vmin=vmin, vmax=vmax)
 
-lower_half = first_sample[61:,:]
-plot_tensor_as_map(first_sample, save_name=model_path + "model-output", vmin=-30, vmax=45)
+gt_coeff_cutoff = gt_coeff[:,:L]
+gt_reals_input = inv_sh_transform(unflatten_coeffs(gt_coeff_cutoff)).squeeze()
 
-diff = (first_sample - gt_reals) #[61:,:]
-plot_tensor_as_map(diff, save_name=model_path + "ground-truth-difference")
+subplots[0,1].imshow(gt_reals_input, cmap = "turbo", vmin=vmin, vmax=vmax)
+
+models = ["interpolation", "New-model", "New-model-deep"]
+for model in models:
+    batch = torch.load(f"Results/{model}/Predictions/reals/batch_0.pt", weights_only=True)
+    first_sample = batch[0].cpu()
+    subplots[i+1,0].imshow(first_sample, cmap = "turbo", vmin=vmin, vmax=vmax)
+    
+    difference = first_sample - gt_reals
+    subplots[i+1,1].imshow(difference, cmap = "turbo", vmin=vmin, vmax=vmax)
+    
+    
+fig.xlabel("Longitude")
+fig.ylabel("Latitude")
+fig.colorbar()
+fig.save("Figures/Sample-Visualization.pdf")
