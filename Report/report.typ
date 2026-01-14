@@ -45,7 +45,7 @@ Climate, Energy and Machine Learning Systems Group\
 Tübingen AI Center, Eberhard-Karls-Universität Tübingen]
 #v(2em)
 
-#pad(left: 4cm, top: -1cm, figure(image("Figures/logo-excellence-cluster.png", width: 50%)))
+#pad(left: 4cm, top: -1cm, image("Figures/logo-excellence-cluster.png", width: 50%))
 
 #v(1fr)
 
@@ -130,7 +130,7 @@ subpar.grid(
   figure(image("Figures/Inference-Input_Sample.pdf"), caption: [Inference input]), <1b>,
   pad(bottom: 1.5cm, figure(image("Figures/Colorbar.pdf", height: 19%))),
   columns: (4fr, 4fr, 0.5fr),
-  caption: [First sample from the test set.],
+  caption: [First sample from the test set. The input has half resolution in both latitude and longitude.],
   label: <sample-ground-truth>,
 ))
 #pad(x: -1cm,
@@ -148,7 +148,7 @@ subpar.grid(
   figure(image("Figures/Model-Prediction-Difference_Sample.pdf"), caption: [Difference to ground truth]),
   pad(bottom: 1.5cm, figure(image("Figures/Model-Difference-Colorbar.pdf", height: 18%))),
   columns: (4fr, 4fr, 0.5fr),
-  caption: [Model varian A prediction on the sample shown in @1b. Shows errors are predominantly small-scale and larger near the poles.],
+  caption: [Model variant A prediction on the sample shown in @1b. Shows errors are predominantly small-scale and larger near the poles.],
   label: <sample-model>,
 ))
 #pagebreak()
