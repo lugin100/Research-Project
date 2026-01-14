@@ -143,6 +143,14 @@ downscaling-normalizing-flow:
             isbn: 9781450388481
             date: 2021
 
+blog-post:
+      type: misc
+      title: "Diffusion is spectral autoregression"
+      author: "Sander Dieleman"
+      date: 2024
+      url: https://sander.ai/2024/09/02/spectral-autoregression.html
+      note: Accessed on 14-01-2026
+
 data:
       type: misc
       title: ERA5 hourly data on pressure levels from 1940 to present. Copernicus Climate Change Service (C3S) Climate Data Store (CDS)
